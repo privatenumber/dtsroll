@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		// Node 18
+		"target": "ES2022",
+		"module": "Preserve",
+		"resolveJsonModule": true,
+		"strict": true,
+		"noEmit": true,
+		"esModuleInterop": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true,
+	},
+}
