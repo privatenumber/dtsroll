@@ -1,11 +1,12 @@
 # dtsroll
 
-_dtsroll_ is a CLI tool for bundling `.d.ts` files into a flattened and optimized output.
+_dtsroll_ is a CLI tool for bundling TypeScript declaration (`.d.ts`) files.
 
-### Why?
-- **Tree-shaking**
+### Why bundle `.d.ts` files?
 
-    Bundles only the used exports, removing unused ones for a smaller output.
+- **Smaller distribution**
+
+    Tree-shaking only keeps used exported code, removing everything unused and decreasing the output size.
 
 - **Bundle in private dependencies**
 
@@ -20,22 +21,33 @@ _dtsroll_ is a CLI tool for bundling `.d.ts` files into a flattened and optimize
 npm install --save-dev dtsroll
 ```
 
-## Quick usage
+## Quick start
 
-1. Compile your TypeScript code and generate `.d.ts` files
+1. Compile your TypeScript code with declaration (`.d.ts`) files
     - If using the TypeScript compiler (`tsc`), enable [`declaration`](https://www.typescriptlang.org/tsconfig/#declaration)
     - If using Vite, use a plugin like [vite-plugin-dts](https://www.npmjs.com/package/vite-plugin-dts)
 
 2. Pass in the entry declaration file to _dtsroll_
 
     ```sh
-    npx dtsroll dist/index.d.ts
+    dtsroll --dry-run dist/index.d.ts
     ```
 
-    > [!IMPORTANT]
-    > This will modify your file directly. Make sure you only pass in files that are generated and you have a backup.
+> [!CAUTION]
+> _dtsroll_ is designed to run on compiled output so it modifies files in-place.
+> - It will modify files you pass in, and files they import.
+> - Only pass in backed up or generated files
+> - Start with `--dry-run`
 
-### Recommended Setup
+3. If the changes look good, remove the `--dry-run` flag:
+
+    ```sh
+    dtsroll dist/index.d.ts
+    ```
+
+### Recommended setup
+
+Running `dtsroll` without specifying input files will auto-detect them from `package.json`.
 
 Update your `package.json` to reference `.d.ts` files and include `dtsroll` in the build step:  
 ```diff
@@ -46,20 +58,16 @@ Update your `package.json` to reference `.d.ts` files and include `dtsroll` in t
          "default": "./dist/index.js"
      },
      "scripts": {
-+        "build": "tsc && dtsroll --remove-bundled"
++        "build": "tsc && dtsroll"
      }
  }
 ```
 
-Running `dtsroll` without passing in input file will auto-detect entry `.d.ts` files from `package.json`.
-
-The `--remove-bundled` flag deletes `.d.ts` files bundled in, keeping your package lean.
-
 ### Externalization
 
-By default, _dtsroll_ decides which dependencies to bundle or keep external by analyzing your `package.json`. All packages listed under `devDependencies` are bundled, and other dependency types are externalized.
+By default, _dtsroll_ decides which dependencies to bundle or keep external by analyzing the `package.json` file. Packages in `devDependencies` are bundled, and packages in other dependency types are externalized.
 
-When there is no `package.json` file, you can pass in packages to externalize with the `--external` flag.
+When there is no `package.json` file, you can specify packages to externalize with the `--external` flag.
 
 #### Handling `@types` packages
 
@@ -74,22 +82,19 @@ To fix this, _dtsroll_ will display a warning suggesting you move the `@types/*`
 
 ## CLI Options
 
-### --help
+### --help, -h
 Display usage instructions.
 
-### --dry
+### --dry-run, -d
 Simulate the bundling process without modifying the disk and logs what would happen.
 
-### --remove-bundled
-Deletes `.d.ts` files that were bundled, reducing the package size. Recommended for minimizing publish artifacts.
-
-### --external
+### --external, -e
 If there is no `package.json` file, you can specify package names to exclude from the bundle.
 
-> [!WARNING]
+> [!NOTE]
 > This flag can only be used when there is no `package.json`. It's better to define dependencies appropriately in `package.json` instead of using this flag.
 
-### --conditions
+### --conditions, -C
 Provide resolution conditions to target specific entry points in dependencies, similar to Node’s [`--conditions`](https://nodejs.org/api/cli.html#-c-condition---conditionscondition).
 
 ## Related
