@@ -1,11 +1,9 @@
-import { dtsroll } from './index.js';
 import type { Plugin } from 'vite';
+import { dtsroll } from './index.js';
 
-const dtsrollPlugin = (): Plugin => {
-    return {
-        name: 'dtsroll',
-       
-    };
-};
+const dtsrollPlugin = (): Plugin => ({
+	name: 'dtsroll',
 
-export { dtsrollPlugin  as dtsroll };
+});
+
+export { dtsrollPlugin as dtsroll };

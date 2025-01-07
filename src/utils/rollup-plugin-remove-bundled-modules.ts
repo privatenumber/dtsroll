@@ -15,7 +15,7 @@ export const removeBundledModulesPlugin = (
 		transform: {
 			// Get size of raw code before other transformations
 			order: 'pre',
-			handler: (code) => ({
+			handler: code => ({
 				meta: {
 					size: Buffer.byteLength(code),
 				},
