@@ -12,6 +12,15 @@ export const removeBundledModulesPlugin = (
 
 	return {
 		name: 'remove-bundled-modules',
+		transform: {
+			// Get size of raw code before other transformations
+			order: 'pre',
+			handler: (code) => ({
+				meta: {
+					size: Buffer.byteLength(code),
+				},
+			}),
+		},
 		async generateBundle(options, bundle) {
 			const modules = Object.values(bundle) as OutputChunk[];
 			const bundledSourceFiles = Array.from(new Set(
@@ -23,7 +32,7 @@ export const removeBundledModulesPlugin = (
 					)),
 			));
 
-			const fileSizes = await Promise.all(bundledSourceFiles.map(moduleId => fs.stat(moduleId)));
+			const fileSizes = bundledSourceFiles.map(moduleId => this.getModuleInfo(moduleId)!.meta);
 			const totalSize = fileSizes.reduce((total, { size }) => total + size, 0);
 			sizeRef.value = totalSize;
 

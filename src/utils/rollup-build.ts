@@ -25,8 +25,8 @@ export const build = async (
 	input: string[],
 	outputDirectory: string,
 	externals: Map<string, string>,
-	conditions: string[],
 	mode: 'generate' | 'write',
+	conditions?: string[],
 ) => {
 	const {
 		externalizePlugin,
