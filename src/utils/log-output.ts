@@ -3,19 +3,19 @@ import byteSize from 'byte-size';
 import {
 	dim, green, magenta, bold, yellow,
 } from 'kolorist';
+import type { Output } from '../types.js';
 import { cwd } from './cwd.js';
-import type { ChunkWithSize } from '../types.js';
 
 type Options = {
 	outputDirectory: string;
 	output: {
-		entries: ChunkWithSize[];
-		chunks: ChunkWithSize[];
-	},
+		entries: Output[];
+		chunks: Output[];
+	};
 	size: {
 		input: number;
 		output: number;
-	},
+	};
 	externalized: [string, string, string?][];
 };
 
@@ -37,7 +37,7 @@ export const logOutput = ({
 			bullet,
 			color,
 		}: {
-			file: ChunkWithSize;
+			file: Output;
 			indent: string;
 			bullet: string;
 			color: (text: string) => string;

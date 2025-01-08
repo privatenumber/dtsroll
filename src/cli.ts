@@ -1,8 +1,8 @@
 import { cli } from 'cleye';
 import { bgYellow, black } from 'kolorist';
 import { name, version, description } from '../package.json';
-import { dtsroll } from './index.js';
 import { logOutput } from './utils/log-output.js';
+import { dtsroll } from './index.js';
 
 const argv = cli({
 	name,

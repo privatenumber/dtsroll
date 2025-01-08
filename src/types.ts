@@ -1,6 +1,6 @@
-import type { OutputChunk } from "rollup";
+import type { OutputChunk } from 'rollup';
 
-export type ChunkWithSize = OutputChunk & {
-    size: number;
-    moduleToPackage: Record<string, string | undefined>;
+export type Output = OutputChunk & {
+	size: number;
+	moduleToPackage: Record<string, string | undefined>;
 };
