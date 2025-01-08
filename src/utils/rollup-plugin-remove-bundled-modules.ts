@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { Plugin, OutputChunk } from 'rollup';
+import type { Plugin, OutputChunk, } from 'rollup';
 import { cwd } from './cwd.js';
 
 const nodeModules = `${path.sep}node_modules${path.sep}`;

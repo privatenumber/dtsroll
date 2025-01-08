@@ -1,10 +1,12 @@
 import path from 'node:path';
 import { yellow } from 'kolorist';
-import { processPackageJson } from './utils/package-json.js';
+import { getPackageJson } from './utils/package-json.js';
 import { getCommonDirectory } from './utils/get-common-directory.js';
 import { validateInput } from './utils/validate-input.js';
 import { build } from './utils/rollup-build.js';
-import { logOutput } from './utils/log-output.js';
+import type { ChunkWithSize } from './types.js';
+import type { OutputChunk } from 'rollup';
+import { getPackageName } from './utils/package-name.js';
 
 type Options = {
 	inputs?: string[];
@@ -19,7 +21,7 @@ export const dtsroll = async ({
 	conditions,
 	dryRun,
 }: Options) => {
-	const pkgJson = await processPackageJson();
+	const pkgJson = await getPackageJson();
 
 	const externals = pkgJson
 		? pkgJson.getExternals()
@@ -56,12 +58,67 @@ export const dtsroll = async ({
 		conditions,
 	);
 
-	logOutput({
+	let outputSize = 0;
+    const outputEntries: ChunkWithSize[] = [];
+    const outputChunks: ChunkWithSize[] = [];
+	const moduleImports = new Set<string>();
+    for (const file of built.output as OutputChunk[]) {
+        const size = Buffer.byteLength(file.code);
+        outputSize += size;
+
+
+        const moduleToPackage = Object.fromEntries(file.moduleIds.map((moduleId) => {
+            return [moduleId, getPackageEntryPoint(moduleId)];
+        }));
+
+        const chunkWithSize = Object.assign(file, {
+            size,
+            moduleToPackage,
+        });
+        if (chunkWithSize.isEntry) {
+            outputEntries.push(chunkWithSize);
+        } else {
+            outputChunks.push(chunkWithSize);
+        }
+
+        /**
+         * There could be file imports here too, but they're hard to distinguish
+         * (e.g. `_dtsroll-chunks/types.d.ts` vs `actual-package`)
+         * 
+         * We aggregate them all here and filter later
+         */
+		for (const id of file.imports) {
+			moduleImports.add(getPackageName(id));
+		}
+    }
+
+    /**
+     * After the build externalizes modules at the resolution level,
+     * we filter it down against what's actually imported from the
+     * built files
+     */
+	const externalizedPackages: [packageName: string, reason: string, warning?: string][] = [];
+    moduleImports.forEach((importedSpecifier) => {
+        const reason = externalized.get(importedSpecifier);
+        if (reason) {
+            externalizedPackages.push([
+                importedSpecifier,
+                reason,
+                pkgJson?.devTypePackages?.[importedSpecifier],
+            ]);
+        }
+    });
+
+    return {
 		outputDirectory,
-		built,
-		externalized,
-		sourceSize,
-		getPackageEntryPoint,
-		getDevTypePackages: pkgJson?.getDevTypePackages,
-	});
+        output: {
+            entries: outputEntries,
+            chunks: outputChunks,
+        },
+        size: {
+            input: sourceSize,
+            output: outputSize,
+        },
+		externalized: externalizedPackages,
+	};
 };

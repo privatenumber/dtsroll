@@ -2,6 +2,7 @@ import { cli } from 'cleye';
 import { bgYellow, black } from 'kolorist';
 import { name, version, description } from '../package.json';
 import { dtsroll } from './index.js';
+import { logOutput } from './utils/log-output.js';
 
 const argv = cli({
 	name,
@@ -45,7 +46,10 @@ dtsroll({
 	external: flags.external,
 	conditions: flags.conditions,
 	dryRun: flags.dryRun,
-}).catch((error) => {
-	console.error('\nFailed to build:', error.message);
-	process.exitCode = 1;
-});
+}).then(
+	logOutput,
+	(error) => {
+		console.error('\nFailed to build:', error.message);
+		process.exitCode = 1;
+	},
+);

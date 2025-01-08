@@ -46,6 +46,7 @@ export const build = async (
 
 		plugins: [
 			externalizePlugin,
+			removeBundledModulesPlugin(sizeRef),
 			nodeResolve({
 				extensions: ['.ts', dtsExtension],
 				exportConditions: conditions,
@@ -61,12 +62,13 @@ export const build = async (
 				 * aliases in the future
 				 */
 			}),
-			removeBundledModulesPlugin(sizeRef),
 		],
 	} satisfies RollupOptions;
 
 	const rollupBuild = await rollup(rollupConfig);
 	const built = await rollupBuild[mode](rollupConfig.output);
+
+	await rollupBuild.close();
 
 	return {
 		built,

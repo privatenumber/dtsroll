@@ -1,47 +1,34 @@
 import path from 'node:path';
 import byteSize from 'byte-size';
-import type { RollupOutput, OutputChunk } from 'rollup';
 import {
 	dim, green, magenta, bold, yellow,
 } from 'kolorist';
-import { getPackageName } from './package-name.js';
 import { cwd } from './cwd.js';
+import type { ChunkWithSize } from '../types.js';
 
 type Options = {
 	outputDirectory: string;
-	built: RollupOutput;
-	externalized: Map<string, string>;
-	getPackageEntryPoint: (subpackagePath: string) => string | undefined;
-	getDevTypePackages?: () => Record<string, string>;
-	sourceSize: number;
+	output: {
+		entries: ChunkWithSize[];
+		chunks: ChunkWithSize[];
+	},
+	size: {
+		input: number;
+		output: number;
+	},
+	externalized: [string, string, string?][];
 };
 
 export const logOutput = ({
 	outputDirectory,
-	built,
+	output: {
+		entries: outputEntries,
+		chunks: outputChunks,
+	},
+	size,
 	externalized,
-	getPackageEntryPoint,
-	getDevTypePackages,
-	sourceSize,
 }: Options) => {
 	const outputDirectoryRelative = path.relative(cwd, outputDirectory) + path.sep;
-	const externalImports = new Set<string>();
-	const fileSizes: Record<string, number> = {};
-	let outputSize = 0;
-
-	const outputEntries: OutputChunk[] = [];
-	const outputChunks: OutputChunk[] = [];
-	for (const file of built.output as OutputChunk[]) {
-		const size = Buffer.byteLength(file.code, 'utf8');
-		fileSizes[file.fileName] = size;
-		outputSize += size;
-
-		if ('isEntry' in file && file.isEntry) {
-			outputEntries.push(file);
-		} else {
-			outputChunks.push(file);
-		}
-	}
 
 	const logChunk = (
 		{
@@ -50,16 +37,16 @@ export const logOutput = ({
 			bullet,
 			color,
 		}: {
-			file: OutputChunk;
+			file: ChunkWithSize;
 			indent: string;
 			bullet: string;
 			color: (text: string) => string;
 		},
 	) => {
-		const sizeFormatted = byteSize(fileSizes[file.fileName]!).toString();
+		const sizeFormatted = byteSize(file.size).toString();
 		let log = `${indent}${bullet} ${dim(color(outputDirectoryRelative))}${color(file.fileName)} ${sizeFormatted}`;
 
-		const { moduleIds } = file;
+		const { moduleIds, moduleToPackage } = file;
 
 		log += `\n${
 			moduleIds
@@ -70,7 +57,7 @@ export const logOutput = ({
 
 					const relativeModuleId = path.relative(cwd, moduleId);
 
-					const bareSpecifier = getPackageEntryPoint(moduleId);
+					const bareSpecifier = moduleToPackage[moduleId];
 					if (bareSpecifier) {
 						return `${prefix}${dim(magenta(bareSpecifier))} ${dim(`(${relativeModuleId})`)}`;
 					}
@@ -81,10 +68,6 @@ export const logOutput = ({
 				})
 				.join('\n')
 		}`;
-
-		for (const id of file.imports) {
-			externalImports.add(getPackageName(id));
-		}
 
 		return log;
 	};
@@ -114,26 +97,20 @@ export const logOutput = ({
 	}
 
 	console.log(bold('\n⚖️ Size savings'));
-	const percentage = (((sourceSize - outputSize) / sourceSize) * 100).toFixed(0);
-	console.log(`   Input source size:   ${byteSize(sourceSize).toString()}`);
-	console.log(`   Bundled output size: ${byteSize(outputSize).toString()} (${percentage}% decrease)`);
+	const percentage = (((size.input - size.output) / size.input) * 100).toFixed(0);
+	console.log(`   Input source size:   ${byteSize(size.input).toString()}`);
+	console.log(`   Bundled output size: ${byteSize(size.output).toString()} (${percentage}% decrease)`);
 
-	const externalImportsFiltered = Array.from(externalImports).filter(
-		packageName => externalized.has(packageName),
-	);
-	if (externalImportsFiltered.length > 0) {
-		const devTypePackages = getDevTypePackages?.() ?? {};
+	if (externalized.length > 0) {
 		console.log(bold('\n📦 Externalized packages'));
 		console.log(
-			externalImportsFiltered
-				.map((packageName) => {
-					const reason = externalized.get(packageName)!;
-					let point = ` ─ ${magenta(packageName)} ${dim(`externalized ${reason}`)}`;
-					if (devTypePackages[packageName]) {
-						point += `\n   ${yellow('Warning:')} ${magenta(devTypePackages[packageName])} should not be in devDependencies if ${magenta(packageName)} is externalized`;
+			externalized
+				.map(([packageName, reason, devTypePackage]) => {
+					let stdout = ` ─ ${magenta(packageName)} ${dim(`externalized ${reason}`)}`;
+					if (devTypePackage) {
+						stdout += `\n   ${yellow('Warning:')} ${magenta(devTypePackage)} should not be in devDependencies if ${magenta(packageName)} is externalized`;
 					}
-
-					return point;
+					return stdout;
 				})
 				.sort()
 				.join('\n'),
