@@ -46,7 +46,7 @@ export const build = async (
 
 		plugins: [
 			externalizePlugin,
-			removeBundledModulesPlugin(sizeRef),
+			removeBundledModulesPlugin(outputDirectory, sizeRef),
 			nodeResolve({
 				extensions: ['.ts', dtsExtension],
 				exportConditions: conditions,

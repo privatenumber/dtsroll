@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Plugin, OutputChunk } from 'rollup';
-import { cwd } from './cwd.js';
 
 const nodeModules = `${path.sep}node_modules${path.sep}`;
 
 export const removeBundledModulesPlugin = (
+	outputDirectory: string,
 	sizeRef: { value?: number },
 ): Plugin => {
 	let deleteFiles: string[] = [];
@@ -27,7 +27,8 @@ export const removeBundledModulesPlugin = (
 				modules
 					.flatMap(({ moduleIds }) => moduleIds)
 					.filter(moduleId => (
-						moduleId.startsWith(cwd)
+						// To avoid deleting files from symlinked dependencies
+						moduleId.startsWith(outputDirectory)
 						&& !moduleId.includes(nodeModules)
 					)),
 			));

@@ -47,7 +47,12 @@ dtsroll({
 	conditions: flags.conditions,
 	dryRun: flags.dryRun,
 }).then(
-	logOutput,
+	(output) => {
+		if ('error' in output) {
+			process.exitCode = 1;
+		}
+		logOutput(output);
+	},
 	(error) => {
 		console.error('\nFailed to build:', error.message);
 		process.exitCode = 1;

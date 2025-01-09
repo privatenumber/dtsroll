@@ -37,13 +37,25 @@ export const dtsroll = async ({
 		}
 	}
 
-	const input = await validateInput(
-		inputs && inputs.length > 0
+	const manualInput = inputs && inputs.length > 0;
+	const validatedInputs = await validateInput(
+		manualInput
 			? inputs.map(file => path.resolve(file))
 			: pkgJson?.getDtsEntryPoints(),
 	);
 
-	const outputDirectory = getCommonDirectory(input);
+	const inputFiles = validatedInputs
+		.filter(([, , error]) => !error)
+		.map(([file]) => file);
+
+	if (inputFiles.length === 0) {
+		return {
+			inputs: validatedInputs,
+			error: 'No input files',
+		};
+	}
+
+	const outputDirectory = getCommonDirectory(inputFiles);
 
 	const {
 		built,
@@ -51,7 +63,7 @@ export const dtsroll = async ({
 		getPackageEntryPoint,
 		sourceSize,
 	} = await build(
-		input,
+		inputFiles,
 		outputDirectory,
 		externals,
 		dryRun ? 'generate' : 'write',
@@ -109,6 +121,7 @@ export const dtsroll = async ({
 	});
 
 	return {
+		inputs: validatedInputs,
 		outputDirectory,
 		output: {
 			entries: outputEntries,

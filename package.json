@@ -29,10 +29,15 @@
 			"default": "./dist/vite.mjs"
 		}
 	},
+	"imports": {
+		"#dtsroll": "./src/index.ts",
+		"#dtsroll/vite": "./src/vite.ts"
+	},
 	"packageManager": "pnpm@9.15.3",
 	"scripts": {
 		"build": "pkgroll",
 		"test": "pnpm build && tsx tests/index.ts",
+		"dev": "tsx watch tests/index.ts",
 		"lint": "lintroll --cache --node --ignore-pattern tests/fixture-package .",
 		"type-check": "tsc",
 		"prepack": "pnpm build && clean-pkg-json"

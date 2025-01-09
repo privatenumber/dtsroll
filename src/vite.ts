@@ -18,7 +18,10 @@ const dtsrollPlugin = (
 				if (built) {
 					return;
 				}
+
 				logOutput(await dtsroll(options));
+				console.log(); // Enter new line to distinguish from other Vite logs
+
 				built = true;
 			},
 		},

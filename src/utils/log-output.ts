@@ -1,21 +1,52 @@
 import path from 'node:path';
 import byteSize from 'byte-size';
 import {
-	dim, green, magenta, bold, yellow,
+	dim, green, magenta, bold, yellow, lightYellow, red,
 } from 'kolorist';
 import type { Output, DtsrollOutput } from '../types.js';
 import { cwd } from './cwd.js';
+import { warningSignUnicode } from './constants.js';
 
-export const logOutput = ({
-	outputDirectory,
-	output: {
-		entries: outputEntries,
-		chunks: outputChunks,
-	},
-	size,
-	externals,
-}: DtsrollOutput) => {
-	const outputDirectoryRelative = path.relative(cwd, outputDirectory) + path.sep;
+export const logOutput = (dtsOutput: DtsrollOutput) => {
+	const { inputs } = dtsOutput;
+	const isCliInput = inputs[0][1] === undefined;
+	console.log(bold(`\n📥 Entry points${isCliInput ? '' : ' in package.json'}`));
+	console.log(
+		inputs
+			.map(([inputFile, inputSource, error]) => {
+				const relativeInputFile = path.relative(cwd, inputFile);
+				const logPath = relativeInputFile.length < inputFile.length ? relativeInputFile : inputFile;
+
+				if (error) {
+					return ` ${lightYellow(`${warningSignUnicode} ${logPath} ${dim(error)}`)}`;
+				}
+
+				return ` → ${green(logPath)}${inputSource ? ` ${dim(`from ${inputSource}`)}` : ''}`;
+			})
+			.join('\n'),
+	);
+
+	if ('error' in dtsOutput) {
+		console.error(`${red('Error:')} ${dtsOutput.error}`);
+		return;
+	}
+
+	const {
+		outputDirectory,
+		output: {
+			entries: outputEntries,
+			chunks: outputChunks,
+		},
+		size,
+		externals,
+	} = dtsOutput;
+
+	const outputDirectoryRelative = path.relative(cwd, outputDirectory);
+	const logPath = (
+		outputDirectoryRelative.length < outputDirectory.length
+			? outputDirectoryRelative
+			: outputDirectory
+	) + path.sep;
 
 	const logChunk = (
 		{
@@ -31,7 +62,7 @@ export const logOutput = ({
 		},
 	) => {
 		const sizeFormatted = byteSize(file.size).toString();
-		let log = `${indent}${bullet} ${dim(color(outputDirectoryRelative))}${color(file.fileName)} ${sizeFormatted}`;
+		let log = `${indent}${bullet} ${dim(color(logPath))}${color(file.fileName)} ${sizeFormatted}`;
 
 		const { moduleIds, moduleToPackage } = file;
 

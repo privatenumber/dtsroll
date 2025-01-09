@@ -7,11 +7,21 @@ export type Output = OutputChunk & {
 
 export type Externals = [
     packageName: string,
-    reason: string,
+    reason?: string,
     warning?: string
 ][];
 
+export type ValidatedInput = [
+	inputPath: string,
+	inputSource: string,
+	error?: string
+];
+
 export type DtsrollOutput = {
+	inputs: ValidatedInput[];
+	error: string;
+} | {
+	inputs: ValidatedInput[];
 	outputDirectory: string;
 	output: {
 		entries: Output[];
