@@ -1,13 +1,14 @@
 import path from 'node:path';
 import byteSize from 'byte-size';
 import {
-	dim, green, magenta, bold, yellow, lightYellow, red,
+	underline, dim, green, magenta, bold, yellow, lightYellow, red,
 } from 'kolorist';
 import type { Output, DtsrollOutput } from '../types.js';
 import { cwd } from './cwd.js';
 import { warningSignUnicode } from './constants.js';
 
 export const logOutput = (dtsOutput: DtsrollOutput) => {
+	console.log(underline('dtsroll'));
 	const { inputs } = dtsOutput;
 	const isCliInput = inputs[0][1] === undefined;
 	console.log(bold(`\n📥 Entry points${isCliInput ? '' : ' in package.json'}`));
