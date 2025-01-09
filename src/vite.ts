@@ -1,9 +1,9 @@
 import type { Plugin } from 'vite';
-import { dtsroll, type Options } from './index.js';
 import { logOutput } from './utils/log-output.js';
+import { dtsroll, type Options } from './index.js';
 
 const dtsrollPlugin = (
-	options?: Options
+	options?: Options,
 ): Plugin => ({
 	name: 'dtsroll',
 	writeBundle: async () => {
