@@ -28,6 +28,6 @@ type Options = {
     conditions?: string[];
     dryRun?: boolean;
 };
-declare const dtsroll: ({ inputs, external, conditions, dryRun, }: Options) => Promise<DtsrollOutput>;
+declare const dtsroll: ({ inputs, external, conditions, dryRun, }?: Options) => Promise<DtsrollOutput>;
 
 export { type DtsrollOutput, type Options, dtsroll };

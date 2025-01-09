@@ -449,7 +449,7 @@ const dtsroll = async ({
   external,
   conditions,
   dryRun
-}) => {
+} = {}) => {
   const pkgJson = await getPackageJson();
   const externals = pkgJson ? pkgJson.getExternals() : /* @__PURE__ */ new Map();
   if (external && external.length > 0) {
