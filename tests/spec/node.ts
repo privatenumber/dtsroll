@@ -20,7 +20,7 @@ export default testSuite(({ describe }) => {
 			});
 		});
 
-		test('Multiple entry-point', async ({ onTestFail }) => {
+		test('Multiple entry-point', async () => {
 			await using fixture = await createFixture(fixtures.multipleEntryPoints);
 
 			const generated = await dtsroll({

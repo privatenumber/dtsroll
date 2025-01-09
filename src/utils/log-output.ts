@@ -74,15 +74,18 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 					const prefix = `${indent}   ${isLast ? '└─ ' : '├─ '}`;
 
 					const relativeModuleId = path.relative(cwd, moduleId);
+					const logModuleId = (
+						relativeModuleId.length < moduleId.length
+							? relativeModuleId
+							: moduleId
+					);
 
 					const bareSpecifier = moduleToPackage[moduleId];
 					if (bareSpecifier) {
-						return `${prefix}${dim(magenta(bareSpecifier))} ${dim(`(${relativeModuleId})`)}`;
+						return `${prefix}${dim(`${magenta(bareSpecifier)} (${logModuleId})`)}`;
 					}
 
-					const fileName = path.basename(relativeModuleId);
-					const directoryPath = path.dirname(relativeModuleId) + path.sep;
-					return `${prefix}${dim(directoryPath)}${dim(fileName)}`;
+					return `${prefix}${dim(logModuleId)}`;
 				})
 				.join('\n')
 		}`;

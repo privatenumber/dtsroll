@@ -45,7 +45,7 @@ export const dtsroll = async ({
 	);
 
 	const inputFiles = validatedInputs
-		.filter(([, , error]) => !error)
+		.filter(input => !input[2])
 		.map(([file]) => file);
 
 	if (inputFiles.length === 0) {
