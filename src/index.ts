@@ -20,7 +20,7 @@ export const dtsroll = async ({
 	external,
 	conditions,
 	dryRun,
-}: Options): Promise<DtsrollOutput> => {
+}: Options = {}): Promise<DtsrollOutput> => {
 	const pkgJson = await getPackageJson();
 
 	const externals = pkgJson
