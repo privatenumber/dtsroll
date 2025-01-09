@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { cli } from 'cleye';
-import { b as bgYellow, a as black, d as dtsroll } from './index-Br9CBpfq.mjs';
-import { l as logOutput } from './log-output-BiTLXO66.mjs';
+import { b as bgYellow, a as black, d as dtsroll } from './index-BW82IRdk.mjs';
+import { l as logOutput } from './log-output-ViIhTCJZ.mjs';
 import 'node:path';
 import 'node:fs/promises';
 import 'rollup';

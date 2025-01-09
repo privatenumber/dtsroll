@@ -319,7 +319,10 @@ const createExternalizePlugin = (configuredExternals) => {
         if (packageName) {
           resolvedBareSpecifiers.set(resolved.id, id);
         }
-        if (importer && resolved.id !== importer) {
+        if (
+          // Self imports happen
+          importer && resolved.id !== importer && importPath.get(importer) !== resolved.id
+        ) {
           importPath.set(resolved.id, importer);
         }
         return resolved;
@@ -334,13 +337,15 @@ const createExternalizePlugin = (configuredExternals) => {
     }
   };
   const getPackageEntryPoint = (subpackagePath) => {
+    let i = 0;
     let lastEntry = subpackagePath;
     do {
       if (resolvedBareSpecifiers.has(lastEntry)) {
         return resolvedBareSpecifiers.get(lastEntry);
       }
       lastEntry = importPath.get(lastEntry);
-    } while (lastEntry);
+      i += 1;
+    } while (lastEntry && i < 100);
   };
   return {
     externalizePlugin,
