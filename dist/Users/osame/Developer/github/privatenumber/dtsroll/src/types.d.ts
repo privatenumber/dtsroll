@@ -1,20 +1,19 @@
 import { OutputChunk } from 'rollup';
-
-type Output = OutputChunk & {
+export type Output = OutputChunk & {
     size: number;
     moduleToPackage: Record<string, string | undefined>;
 };
-type Externals = [
+export type Externals = [
     packageName: string,
     reason?: string,
     warning?: string
 ][];
-type ValidatedInput = [
+export type ValidatedInput = [
     inputPath: string,
     inputSource: string,
     error?: string
 ];
-type DtsrollOutput = {
+export type DtsrollOutput = {
     inputs: ValidatedInput[];
     error: string;
 } | {
@@ -30,13 +29,3 @@ type DtsrollOutput = {
     };
     externals: Externals;
 };
-
-type Options = {
-    inputs?: string[];
-    external?: string[];
-    conditions?: string[];
-    dryRun?: boolean;
-};
-declare const dtsroll: ({ inputs, external, conditions, dryRun, }?: Options) => Promise<DtsrollOutput>;
-
-export { type DtsrollOutput, type Options, dtsroll };

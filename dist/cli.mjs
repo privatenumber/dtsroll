@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { cli } from 'cleye';
-import { b as bgYellow, a as black, d as dtsroll } from './index-DWWhBXa5.mjs';
-import { l as logOutput } from './log-output-DpKg8mKh.mjs';
+import { b as bgYellow, a as black, d as dtsroll } from './index-Br9CBpfq.mjs';
+import { l as logOutput } from './log-output-BiTLXO66.mjs';
 import 'node:path';
 import 'node:fs/promises';
 import 'rollup';
@@ -53,7 +53,12 @@ dtsroll({
   conditions: flags.conditions,
   dryRun: flags.dryRun
 }).then(
-  logOutput,
+  (output) => {
+    if ("error" in output) {
+      process.exitCode = 1;
+    }
+    logOutput(output);
+  },
   (error) => {
     console.error("\nFailed to build:", error.message);
     process.exitCode = 1;

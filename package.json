@@ -29,6 +29,10 @@
       "default": "./dist/vite.mjs"
     }
   },
+  "imports": {
+    "#dtsroll": "./src/index.ts",
+    "#dtsroll/vite": "./src/vite.ts"
+  },
   "engines": {
     "node": ">=18"
   },

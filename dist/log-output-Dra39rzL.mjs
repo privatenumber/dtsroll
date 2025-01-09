@@ -1,17 +1,39 @@
 import path from 'node:path';
 import byteSize from 'byte-size';
-import { c as cwd, e as bold, m as magenta, f as dim, y as yellow, g as green } from './index-DWWhBXa5.mjs';
+import { c as bold, l as lightYellow, w as warningSignUnicode, e as dim, g as green, r as red, m as magenta, y as yellow } from './index-Br9CBpfq.mjs';
 
-const logOutput = ({
-  outputDirectory,
-  output: {
-    entries: outputEntries,
-    chunks: outputChunks
-  },
-  size,
-  externals
-}) => {
-  const outputDirectoryRelative = path.relative(cwd, outputDirectory) + path.sep;
+const cwd = process.cwd();
+
+const logOutput = (dtsOutput) => {
+  const { inputs } = dtsOutput;
+  const isCliInput = inputs[0][1] === void 0;
+  console.log(bold(`
+\u{1F4E5} Entry points${isCliInput ? "" : " in package.json"}`));
+  console.log(
+    inputs.map(([inputFile, inputSource, error]) => {
+      const relativeInputFile = path.relative(cwd, inputFile);
+      const logPath2 = relativeInputFile.length < inputFile.length ? relativeInputFile : inputFile;
+      if (error) {
+        return ` ${lightYellow(`${warningSignUnicode} ${logPath2} ${dim(error)}`)}`;
+      }
+      return ` \u2192 ${green(logPath2)}${inputSource ? ` ${dim(`from ${inputSource}`)}` : ""}`;
+    }).join("\n")
+  );
+  if ("error" in dtsOutput) {
+    console.error(`${red("Error:")} ${dtsOutput.error}`);
+    return;
+  }
+  const {
+    outputDirectory,
+    output: {
+      entries: outputEntries,
+      chunks: outputChunks
+    },
+    size,
+    externals
+  } = dtsOutput;
+  const outputDirectoryRelative = path.relative(cwd, outputDirectory);
+  const logPath = (outputDirectoryRelative.length < outputDirectory.length ? outputDirectoryRelative : outputDirectory) + path.sep;
   const logChunk = ({
     file,
     indent,
@@ -19,19 +41,20 @@ const logOutput = ({
     color
   }) => {
     const sizeFormatted = byteSize(file.size).toString();
-    let log = `${indent}${bullet} ${dim(color(outputDirectoryRelative))}${color(file.fileName)} ${sizeFormatted}`;
+    let log = `${indent}${bullet} ${dim(color(logPath))}${color(file.fileName)} ${sizeFormatted}`;
     const { moduleIds, moduleToPackage } = file;
     log += `
 ${moduleIds.sort().map((moduleId, index) => {
       const isLast = index === moduleIds.length - 1;
       const prefix = `${indent}   ${isLast ? "\u2514\u2500 " : "\u251C\u2500 "}`;
       const relativeModuleId = path.relative(cwd, moduleId);
+      const logModuleId = relativeModuleId.length < moduleId.length ? relativeModuleId : moduleId;
       const bareSpecifier = moduleToPackage[moduleId];
       if (bareSpecifier) {
-        return `${prefix}${dim(magenta(bareSpecifier))} ${dim(`(${relativeModuleId})`)}`;
+        return `${prefix}${dim(magenta(bareSpecifier))} ${dim(`(${logModuleId})`)}`;
       }
-      const fileName = path.basename(relativeModuleId);
-      const directoryPath = path.dirname(relativeModuleId) + path.sep;
+      const fileName = path.basename(logModuleId);
+      const directoryPath = path.dirname(logModuleId) + path.sep;
       return `${prefix}${dim(directoryPath)}${dim(fileName)}`;
     }).join("\n")}`;
     return log;

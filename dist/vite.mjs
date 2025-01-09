@@ -1,5 +1,5 @@
-import { l as logOutput } from './log-output-DpKg8mKh.mjs';
-import { d as dtsroll } from './index-DWWhBXa5.mjs';
+import { l as logOutput } from './log-output-BiTLXO66.mjs';
+import { d as dtsroll } from './index-Br9CBpfq.mjs';
 import 'node:path';
 import 'byte-size';
 import 'node:fs/promises';
@@ -21,6 +21,7 @@ const dtsrollPlugin = (options) => {
           return;
         }
         logOutput(await dtsroll(options));
+        console.log();
         built = true;
       }
     }

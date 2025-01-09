@@ -82,13 +82,12 @@ const bold = kolorist(1, 22);
 const dim = kolorist(2, 22);
 // colors
 const black = kolorist(30, 39);
+const red = kolorist(31, 39);
 const green = kolorist(32, 39);
 const yellow = kolorist(33, 39);
 const magenta = kolorist(35, 39);
 const lightYellow = kolorist(93, 39);
 const bgYellow = kolorist(43, 49);
-
-const cwd = process.cwd();
 
 const dtsExtension = ".d.ts";
 const warningSignUnicode = "\u26A0";
@@ -279,31 +278,20 @@ const validateInput = async (inputFiles) => {
     throw new Error("No input files");
   }
   const isCliInput = Array.isArray(inputFiles);
-  console.log(bold(`
-\u{1F4E5} Entry points${isCliInput ? "" : " in package.json"}`));
   const inputNormalized = isCliInput ? inputFiles.map((i) => [i]) : Object.entries(inputFiles);
-  const validInputs = [];
-  const stdout = await Promise.all(inputNormalized.map(async ([inputFile, inputSource]) => {
-    const relativeInputFile = path.relative(cwd, inputFile);
-    if (!inputFile.startsWith(cwd)) {
-      return ` ${lightYellow(`${warningSignUnicode} ${relativeInputFile} ${dim("Ignoring file outside of cwd")}`)}`;
+  return await Promise.all(inputNormalized.map(
+    async ([inputFile, inputSource]) => {
+      const notDts = !inputFile.endsWith(dtsExtension);
+      if (notDts) {
+        return [inputFile, inputSource, "Ignoring non-d.ts input"];
+      }
+      const exists = await pathExists(inputFile);
+      if (!exists) {
+        return [inputFile, inputSource, "File not found"];
+      }
+      return [inputFile, inputSource];
     }
-    const notDts = !inputFile.endsWith(dtsExtension);
-    if (notDts) {
-      return ` ${lightYellow(`${warningSignUnicode} ${relativeInputFile} ${dim("Ignoring non-d.ts input")}`)}`;
-    }
-    const exists = await pathExists(inputFile);
-    if (!exists) {
-      return ` ${lightYellow(`${warningSignUnicode} ${relativeInputFile} ${dim("File not found")}`)}`;
-    }
-    validInputs.push(inputFile);
-    return ` \u2192 ${green(relativeInputFile)}${inputSource ? ` ${dim(`from ${inputSource}`)}` : ""}`;
-  }));
-  console.log(stdout.join("\n"));
-  if (validInputs.length === 0) {
-    throw new Error("No input files");
-  }
-  return validInputs;
+  ));
 };
 
 const isPath = ([firstCharacter]) => firstCharacter === "." || firstCharacter === path.sep;
@@ -362,7 +350,7 @@ const createExternalizePlugin = (configuredExternals) => {
 };
 
 const nodeModules = `${path.sep}node_modules${path.sep}`;
-const removeBundledModulesPlugin = (sizeRef) => {
+const removeBundledModulesPlugin = (outputDirectory, sizeRef) => {
   let deleteFiles = [];
   return {
     name: "remove-bundled-modules",
@@ -378,7 +366,10 @@ const removeBundledModulesPlugin = (sizeRef) => {
     async generateBundle(options, bundle) {
       const modules = Object.values(bundle);
       const bundledSourceFiles = Array.from(new Set(
-        modules.flatMap(({ moduleIds }) => moduleIds).filter((moduleId) => moduleId.startsWith(cwd) && !moduleId.includes(nodeModules))
+        modules.flatMap(({ moduleIds }) => moduleIds).filter((moduleId) => (
+          // To avoid deleting files from symlinked dependencies
+          moduleId.startsWith(outputDirectory) && !moduleId.includes(nodeModules)
+        ))
       ));
       const fileSizes = bundledSourceFiles.map((moduleId) => this.getModuleInfo(moduleId).meta);
       const totalSize = fileSizes.reduce((total, { size }) => total + size, 0);
@@ -416,7 +407,7 @@ const build = async (input, outputDirectory, externals, mode, conditions) => {
     },
     plugins: [
       externalizePlugin,
-      removeBundledModulesPlugin(sizeRef),
+      removeBundledModulesPlugin(outputDirectory, sizeRef),
       nodeResolve({
         extensions: [".ts", dtsExtension],
         exportConditions: conditions
@@ -461,17 +452,25 @@ const dtsroll = async ({
       }
     }
   }
-  const input = await validateInput(
-    inputs && inputs.length > 0 ? inputs.map((file) => path.resolve(file)) : pkgJson?.getDtsEntryPoints()
+  const manualInput = inputs && inputs.length > 0;
+  const validatedInputs = await validateInput(
+    manualInput ? inputs.map((file) => path.resolve(file)) : pkgJson?.getDtsEntryPoints()
   );
-  const outputDirectory = getCommonDirectory(input);
+  const inputFiles = validatedInputs.filter(([, , error]) => !error).map(([file]) => file);
+  if (inputFiles.length === 0) {
+    return {
+      inputs: validatedInputs,
+      error: "No input files"
+    };
+  }
+  const outputDirectory = getCommonDirectory(inputFiles);
   const {
     built,
     externalized,
     getPackageEntryPoint,
     sourceSize
   } = await build(
-    input,
+    inputFiles,
     outputDirectory,
     externals,
     dryRun ? "generate" : "write",
@@ -512,6 +511,7 @@ const dtsroll = async ({
     }
   });
   return {
+    inputs: validatedInputs,
     outputDirectory,
     output: {
       entries: outputEntries,
@@ -525,4 +525,4 @@ const dtsroll = async ({
   };
 };
 
-export { black as a, bgYellow as b, cwd as c, dtsroll as d, bold as e, dim as f, green as g, magenta as m, yellow as y };
+export { black as a, bgYellow as b, bold as c, dtsroll as d, dim as e, green as g, lightYellow as l, magenta as m, red as r, warningSignUnicode as w, yellow as y };
