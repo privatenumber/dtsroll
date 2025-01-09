@@ -7,15 +7,24 @@ import 'rollup';
 import 'rollup-plugin-dts';
 import '@rollup/plugin-node-resolve';
 
-const dtsrollPlugin = (options) => ({
-  name: "dtsroll",
-  writeBundle: {
-    sequential: true,
-    order: "post",
-    handler: async () => {
-      logOutput(await dtsroll(options));
+const dtsrollPlugin = (options) => {
+  let built = false;
+  return {
+    name: "dtsroll",
+    apply: "build",
+    enforce: "post",
+    writeBundle: {
+      sequential: true,
+      order: "post",
+      handler: async () => {
+        if (built) {
+          return;
+        }
+        logOutput(await dtsroll(options));
+        built = true;
+      }
     }
-  }
-});
+  };
+};
 
 export { dtsrollPlugin as dtsroll };
