@@ -6,8 +6,12 @@ const dtsrollPlugin = (
 	options?: Options,
 ): Plugin => ({
 	name: 'dtsroll',
-	writeBundle: async () => {
-		logOutput(await dtsroll(options));
+	writeBundle: {
+		sequential: true,
+		order: 'post',
+		handler: async () => {
+			logOutput(await dtsroll(options));
+		},
 	},
 });
 
