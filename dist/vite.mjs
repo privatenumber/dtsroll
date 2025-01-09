@@ -9,8 +9,12 @@ import '@rollup/plugin-node-resolve';
 
 const dtsrollPlugin = (options) => ({
   name: "dtsroll",
-  writeBundle: async () => {
-    logOutput(await dtsroll(options));
+  writeBundle: {
+    sequential: true,
+    order: "post",
+    handler: async () => {
+      logOutput(await dtsroll(options));
+    }
   }
 });
 
