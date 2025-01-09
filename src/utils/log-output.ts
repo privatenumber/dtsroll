@@ -3,21 +3,8 @@ import byteSize from 'byte-size';
 import {
 	dim, green, magenta, bold, yellow,
 } from 'kolorist';
-import type { Output } from '../types.js';
+import type { Output, DtsrollOutput } from '../types.js';
 import { cwd } from './cwd.js';
-
-type Options = {
-	outputDirectory: string;
-	output: {
-		entries: Output[];
-		chunks: Output[];
-	};
-	size: {
-		input: number;
-		output: number;
-	};
-	externalized: [string, string, string?][];
-};
 
 export const logOutput = ({
 	outputDirectory,
@@ -26,8 +13,8 @@ export const logOutput = ({
 		chunks: outputChunks,
 	},
 	size,
-	externalized,
-}: Options) => {
+	externals,
+}: DtsrollOutput) => {
 	const outputDirectoryRelative = path.relative(cwd, outputDirectory) + path.sep;
 
 	const logChunk = (
@@ -101,10 +88,10 @@ export const logOutput = ({
 	console.log(`   Input source size:   ${byteSize(size.input).toString()}`);
 	console.log(`   Bundled output size: ${byteSize(size.output).toString()} (${percentage}% decrease)`);
 
-	if (externalized.length > 0) {
-		console.log(bold('\n📦 Externalized packages'));
+	if (externals.length > 0) {
+		console.log(bold('\n📦 External packages'));
 		console.log(
-			externalized
+			externals
 				.map(([packageName, reason, devTypePackage]) => {
 					let stdout = ` ─ ${magenta(packageName)} ${dim(`externalized ${reason}`)}`;
 					if (devTypePackage) {

@@ -5,10 +5,10 @@ import { getPackageJson } from './utils/package-json.js';
 import { getCommonDirectory } from './utils/get-common-directory.js';
 import { validateInput } from './utils/validate-input.js';
 import { build } from './utils/rollup-build.js';
-import type { Output } from './types.js';
+import type { Output, Externals, DtsrollOutput } from './types.js';
 import { getPackageName } from './utils/package-name.js';
 
-type Options = {
+export type Options = {
 	inputs?: string[];
 	external?: string[];
 	conditions?: string[];
@@ -20,7 +20,7 @@ export const dtsroll = async ({
 	external,
 	conditions,
 	dryRun,
-}: Options) => {
+}: Options): Promise<DtsrollOutput> => {
 	const pkgJson = await getPackageJson();
 
 	const externals = pkgJson
@@ -96,11 +96,11 @@ export const dtsroll = async ({
      * we filter it down against what's actually imported from the
      * built files
      */
-	const externalizedPackages: [packageName: string, reason: string, warning?: string][] = [];
+	const externalPackages: Externals = [];
 	moduleImports.forEach((importedSpecifier) => {
 		const reason = externalized.get(importedSpecifier);
 		if (reason) {
-			externalizedPackages.push([
+			externalPackages.push([
 				importedSpecifier,
 				reason,
 				pkgJson?.devTypePackages?.[importedSpecifier],
@@ -118,6 +118,8 @@ export const dtsroll = async ({
 			input: sourceSize,
 			output: outputSize,
 		},
-		externalized: externalizedPackages,
+		externals: externalPackages,
 	};
 };
+
+export type { DtsrollOutput };
