@@ -1,0 +1,45 @@
+import { expect, testSuite } from 'manten';
+import { createFixture } from 'fs-fixture';
+import { dtsroll } from '#dtsroll/vite';
+import { build } from 'vite';
+import dts from 'vite-plugin-dts';
+
+export default testSuite(({ describe }) => {
+	describe('vite', ({ test }) => {
+        test('vite plugin', async () => {
+            await using fixture = await createFixture({
+                src: {
+                    'entry.ts': `
+                    import type { A } from './types.js';
+                    export const a: A = 1;
+                    `,
+                    'types.ts': `export type A = number;`,
+                },
+                'tsconfig.json': JSON.stringify({
+                    includes: ['src'],
+                }),
+            });
+
+            await build({
+                root: fixture.path,
+                build: {
+                    lib: {
+                        entry: fixture.getPath('src/entry.ts'),
+                        formats: ['es'],
+                    },
+                },
+                plugins: [
+                    dts({
+                        tsconfigPath: fixture.getPath('tsconfig.json'),
+                    }),
+                    dtsroll({
+                        inputs: [fixture.getPath('dist/entry.d.ts')],
+                    }),
+                ],
+            });
+
+            const bundled = await fixture.readFile('dist/entry.d.ts', 'utf8');
+            expect(bundled).toMatch('type A = number;');
+        });
+	});
+});

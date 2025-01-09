@@ -28,10 +28,10 @@ export default testSuite(({ describe }) => {
 			});
 
 			/**
-             * Output is slightly bigger because the input is so small
-             * and the built snytax is more verbose
-             * e.g. type a = 1; export { a as b }  vs export type b = 1;
-             */
+			 * Output is slightly bigger because the input is so small
+			 * and the built snytax is more verbose
+			 * e.g. type a = 1; export { a as b }  vs export type b = 1;
+			 */
 			expect(generated).toMatchObject({
 				size: {
 					input: 165,
