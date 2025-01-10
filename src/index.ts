@@ -9,6 +9,7 @@ import type { Output, Externals, DtsrollOutput } from './types.js';
 import { getPackageName } from './utils/package-name.js';
 
 export type Options = {
+	cwd?: string;
 	inputs?: string[];
 	external?: string[];
 	conditions?: string[];
@@ -16,12 +17,13 @@ export type Options = {
 };
 
 export const dtsroll = async ({
+	cwd = process.cwd(),
 	inputs,
 	external,
 	conditions,
 	dryRun,
 }: Options = {}): Promise<DtsrollOutput> => {
-	const pkgJson = await getPackageJson();
+	const pkgJson = await getPackageJson(cwd);
 
 	const externals = pkgJson
 		? pkgJson.getExternals()

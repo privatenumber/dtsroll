@@ -102,10 +102,26 @@ Provide resolution conditions to target specific entry points in dependencies, s
 import { dtsroll } from 'dtsroll'
 
 await dtsroll({
-    // inputs?: string[];
-    // external?: string[];
-    // conditions?: string[];
-    // dryRun?: boolean;
+    /**
+     * CWD to find the package.json in
+     * @default process.cwd()
+     */
+    cwd?: string;
+
+    /**
+     * Defaults to auto-detecting d.ts files from package.json
+     */
+    inputs?: string[];
+
+    /**
+     * Only used if there's no package.json
+     * Defaults to auto-detecting dependencies from package.json
+     */
+    external?: string[];
+
+    conditions?: string[];
+
+    dryRun?: boolean;
 })
 ```
 

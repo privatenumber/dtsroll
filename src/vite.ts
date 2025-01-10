@@ -6,10 +6,14 @@ const dtsrollPlugin = (
 	options?: Options,
 ): Plugin => {
 	let built = false;
+	let cwd: string | undefined;
 	return {
 		name: 'dtsroll',
 		apply: 'build',
 		enforce: 'post',
+		config({ root }) {
+			cwd = root;
+		},
 		writeBundle: {
 			sequential: true,
 			order: 'post',
@@ -19,7 +23,10 @@ const dtsrollPlugin = (
 					return;
 				}
 
-				logOutput(await dtsroll(options));
+				logOutput(await dtsroll({
+					cwd,
+					...options,
+				}));
 				console.log(); // Enter new line to distinguish from other Vite logs
 
 				built = true;

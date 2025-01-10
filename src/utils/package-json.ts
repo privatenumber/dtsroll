@@ -86,8 +86,10 @@ const getExternals = (
 	return external;
 };
 
-export const getPackageJson = async () => {
-	const packageJsonPath = path.resolve('package.json');
+export const getPackageJson = async (
+	cwd: string,
+) => {
+	const packageJsonPath = path.resolve(cwd, 'package.json');
 	const exists = await pathExists(packageJsonPath);
 	if (!exists) {
 		return;
