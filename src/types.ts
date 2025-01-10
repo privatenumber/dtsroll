@@ -13,7 +13,7 @@ export type Externals = [
 
 export type ValidatedInput = [
 	inputPath: string,
-	inputSource: string,
+	inputSource: string | undefined,
 	error?: string
 ];
 

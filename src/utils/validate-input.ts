@@ -12,7 +12,7 @@ export const validateInput = async (
 	const isCliInput = Array.isArray(inputFiles);
 
 	const inputNormalized = isCliInput
-		? inputFiles.map(i => [i])
+		? inputFiles.map(i => [i] as const)
 		: Object.entries(inputFiles);
 
 	return await Promise.all(inputNormalized.map(

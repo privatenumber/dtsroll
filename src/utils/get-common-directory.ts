@@ -8,8 +8,8 @@ export const getCommonDirectory = (
 	const commonPath: string[] = [];
 
 	const [firstPath] = splitPaths;
-	for (let i = 0; i < firstPath.length; i += 1) {
-		const segment = firstPath[i];
+	for (let i = 0; i < firstPath!.length; i += 1) {
+		const segment = firstPath![i]!;
 
 		// Check if this segment is common to all paths
 		const segmentIsCommon = splitPaths.every(pathParts => pathParts[i] === segment);

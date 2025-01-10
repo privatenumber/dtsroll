@@ -9,8 +9,9 @@ import { warningSignUnicode } from './constants.js';
 
 export const logOutput = (dtsOutput: DtsrollOutput) => {
 	console.log(underline('dtsroll'));
+
 	const { inputs } = dtsOutput;
-	const isCliInput = inputs[0][1] === undefined;
+	const isCliInput = inputs[0]?.[1] === undefined;
 	console.log(bold(`\n📥 Entry points${isCliInput ? '' : ' in package.json'}`));
 	console.log(
 		inputs

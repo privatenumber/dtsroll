@@ -5,6 +5,7 @@
 		"module": "Preserve",
 		"resolveJsonModule": true,
 		"strict": true,
+		"noUncheckedIndexedAccess": true,
 		"noEmit": true,
 		"esModuleInterop": true,
 		"verbatimModuleSyntax": true,
