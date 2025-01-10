@@ -80,7 +80,7 @@ Because the main package is in `dependencies`,  _dtsroll_ externalizes it. Howev
 
 To fix this, _dtsroll_ will display a warning suggesting you move the `@types/*` package out of `devDependencies`.
 
-## CLI Options
+## CLI
 
 ### --help, -h
 Display usage instructions.
@@ -96,6 +96,37 @@ If there is no `package.json` file, you can specify package names to exclude fro
 
 ### --conditions, -C
 Provide resolution conditions to target specific entry points in dependencies, similar to Node’s [`--conditions`](https://nodejs.org/api/cli.html#-c-condition---conditionscondition).
+
+## Node.js API
+```ts
+import { dtsroll } from 'dtsroll'
+
+await dtsroll({
+    // inputs?: string[];
+    // external?: string[];
+    // conditions?: string[];
+    // dryRun?: boolean;
+})
+```
+
+## Vite plugin
+
+Use it in conjunction with a plugin that generates the initial declaration files like `vite-plugin-dts`.
+
+```ts
+import { defineConfig } from 'vitest/config'
+import dts from 'vite-plugin-dts'
+import { dtsroll } from 'dtsroll/vite'
+
+export default defineConfig({
+    // ...
+    plugins: [
+    // ...
+        dts(),
+        dtsroll()
+    ]
+})
+```
 
 ## Related
 
