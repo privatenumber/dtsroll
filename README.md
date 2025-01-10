@@ -52,14 +52,14 @@ Running `dtsroll` without specifying input files will auto-detect them from `pac
 Update your `package.json` to reference `.d.ts` files and include `dtsroll` in the build step:  
 ```diff
  {
-	 "name": "my-package",
-	 "exports": {
-+		"types": "./dist/index.d.ts",
-		 "default": "./dist/index.js"
-	 },
-	 "scripts": {
-+		"build": "tsc && dtsroll"
-	 }
+     "name": "my-package",
+     "exports": {
++        "types": "./dist/index.d.ts",
+         "default": "./dist/index.js"
+     },
+     "scripts": {
++        "build": "tsc && dtsroll"
+     }
  }
 ```
 
