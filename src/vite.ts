@@ -11,7 +11,7 @@ const dtsrollPlugin = (
 		name: 'dtsroll',
 		apply: 'build',
 		enforce: 'post',
-		config({ root }) {
+		config: ({ root }) => {
 			cwd = root;
 		},
 		writeBundle: {

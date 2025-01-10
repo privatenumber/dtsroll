@@ -101,27 +101,28 @@ Provide resolution conditions to target specific entry points in dependencies, s
 ```ts
 import { dtsroll } from 'dtsroll'
 
-await dtsroll({
+await dtsroll(options as {
+
     /**
      * CWD to find the package.json in
      * @default process.cwd()
      */
-    cwd?: string;
+    cwd?: string
 
     /**
      * Defaults to auto-detecting d.ts files from package.json
      */
-    inputs?: string[];
+    inputs?: string[]
 
     /**
      * Only used if there's no package.json
      * Defaults to auto-detecting dependencies from package.json
      */
-    external?: string[];
+    external?: string[]
 
-    conditions?: string[];
+    conditions?: string[]
 
-    dryRun?: boolean;
+    dryRun?: boolean
 })
 ```
 
