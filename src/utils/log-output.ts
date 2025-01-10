@@ -1,47 +1,53 @@
 import path from 'node:path';
 import byteSize from 'byte-size';
-import type { RollupOutput, OutputChunk } from 'rollup';
 import {
-	dim, green, magenta, bold, yellow,
+	underline, dim, green, magenta, bold, yellow, lightYellow, red,
 } from 'kolorist';
-import { getPackageName } from './package-name.js';
+import type { Output, DtsrollOutput } from '../types.js';
 import { cwd } from './cwd.js';
+import { warningSignUnicode } from './constants.js';
 
-type Options = {
-	outputDirectory: string;
-	built: RollupOutput;
-	externalized: Map<string, string>;
-	getPackageEntryPoint: (subpackagePath: string) => string | undefined;
-	getDevTypePackages?: () => Record<string, string>;
-	sourceSize: number;
-};
+export const logOutput = (dtsOutput: DtsrollOutput) => {
+	console.log(underline('dtsroll'));
+	const { inputs } = dtsOutput;
+	const isCliInput = inputs[0][1] === undefined;
+	console.log(bold(`\n📥 Entry points${isCliInput ? '' : ' in package.json'}`));
+	console.log(
+		inputs
+			.map(([inputFile, inputSource, error]) => {
+				const relativeInputFile = path.relative(cwd, inputFile);
+				const logPath = relativeInputFile.length < inputFile.length ? relativeInputFile : inputFile;
 
-export const logOutput = ({
-	outputDirectory,
-	built,
-	externalized,
-	getPackageEntryPoint,
-	getDevTypePackages,
-	sourceSize,
-}: Options) => {
-	const outputDirectoryRelative = path.relative(cwd, outputDirectory) + path.sep;
-	const externalImports = new Set<string>();
-	const fileSizes: Record<string, number> = {};
-	let outputSize = 0;
+				if (error) {
+					return ` ${lightYellow(`${warningSignUnicode} ${logPath} ${dim(error)}`)}`;
+				}
 
-	const outputEntries: OutputChunk[] = [];
-	const outputChunks: OutputChunk[] = [];
-	for (const file of built.output as OutputChunk[]) {
-		const size = Buffer.byteLength(file.code, 'utf8');
-		fileSizes[file.fileName] = size;
-		outputSize += size;
+				return ` → ${green(logPath)}${inputSource ? ` ${dim(`from ${inputSource}`)}` : ''}`;
+			})
+			.join('\n'),
+	);
 
-		if ('isEntry' in file && file.isEntry) {
-			outputEntries.push(file);
-		} else {
-			outputChunks.push(file);
-		}
+	if ('error' in dtsOutput) {
+		console.error(`${red('Error:')} ${dtsOutput.error}`);
+		return;
 	}
+
+	const {
+		outputDirectory,
+		output: {
+			entries: outputEntries,
+			chunks: outputChunks,
+		},
+		size,
+		externals,
+	} = dtsOutput;
+
+	const outputDirectoryRelative = path.relative(cwd, outputDirectory);
+	const logPath = (
+		outputDirectoryRelative.length < outputDirectory.length
+			? outputDirectoryRelative
+			: outputDirectory
+	) + path.sep;
 
 	const logChunk = (
 		{
@@ -50,16 +56,16 @@ export const logOutput = ({
 			bullet,
 			color,
 		}: {
-			file: OutputChunk;
+			file: Output;
 			indent: string;
 			bullet: string;
 			color: (text: string) => string;
 		},
 	) => {
-		const sizeFormatted = byteSize(fileSizes[file.fileName]!).toString();
-		let log = `${indent}${bullet} ${dim(color(outputDirectoryRelative))}${color(file.fileName)} ${sizeFormatted}`;
+		const sizeFormatted = byteSize(file.size).toString();
+		let log = `${indent}${bullet} ${dim(color(logPath))}${color(file.fileName)} ${sizeFormatted}`;
 
-		const { moduleIds } = file;
+		const { moduleIds, moduleToPackage } = file;
 
 		log += `\n${
 			moduleIds
@@ -69,22 +75,21 @@ export const logOutput = ({
 					const prefix = `${indent}   ${isLast ? '└─ ' : '├─ '}`;
 
 					const relativeModuleId = path.relative(cwd, moduleId);
+					const logModuleId = (
+						relativeModuleId.length < moduleId.length
+							? relativeModuleId
+							: moduleId
+					);
 
-					const bareSpecifier = getPackageEntryPoint(moduleId);
+					const bareSpecifier = moduleToPackage[moduleId];
 					if (bareSpecifier) {
-						return `${prefix}${dim(magenta(bareSpecifier))} ${dim(`(${relativeModuleId})`)}`;
+						return `${prefix}${dim(`${magenta(bareSpecifier)} (${logModuleId})`)}`;
 					}
 
-					const fileName = path.basename(relativeModuleId);
-					const directoryPath = path.dirname(relativeModuleId) + path.sep;
-					return `${prefix}${dim(directoryPath)}${dim(fileName)}`;
+					return `${prefix}${dim(logModuleId)}`;
 				})
 				.join('\n')
 		}`;
-
-		for (const id of file.imports) {
-			externalImports.add(getPackageName(id));
-		}
 
 		return log;
 	};
@@ -114,26 +119,20 @@ export const logOutput = ({
 	}
 
 	console.log(bold('\n⚖️ Size savings'));
-	const percentage = (((sourceSize - outputSize) / sourceSize) * 100).toFixed(0);
-	console.log(`   Input source size:   ${byteSize(sourceSize).toString()}`);
-	console.log(`   Bundled output size: ${byteSize(outputSize).toString()} (${percentage}% decrease)`);
+	const percentage = (((size.input - size.output) / size.input) * 100).toFixed(0);
+	console.log(`   Input source size:   ${byteSize(size.input).toString()}`);
+	console.log(`   Bundled output size: ${byteSize(size.output).toString()} (${percentage}% decrease)`);
 
-	const externalImportsFiltered = Array.from(externalImports).filter(
-		packageName => externalized.has(packageName),
-	);
-	if (externalImportsFiltered.length > 0) {
-		const devTypePackages = getDevTypePackages?.() ?? {};
-		console.log(bold('\n📦 Externalized packages'));
+	if (externals.length > 0) {
+		console.log(bold('\n📦 External packages'));
 		console.log(
-			externalImportsFiltered
-				.map((packageName) => {
-					const reason = externalized.get(packageName)!;
-					let point = ` ─ ${magenta(packageName)} ${dim(`externalized ${reason}`)}`;
-					if (devTypePackages[packageName]) {
-						point += `\n   ${yellow('Warning:')} ${magenta(devTypePackages[packageName])} should not be in devDependencies if ${magenta(packageName)} is externalized`;
+			externals
+				.map(([packageName, reason, devTypePackage]) => {
+					let stdout = ` ─ ${magenta(packageName)} ${dim(`externalized ${reason}`)}`;
+					if (devTypePackage) {
+						stdout += `\n   ${yellow('Warning:')} ${magenta(devTypePackage)} should not be in devDependencies if ${magenta(packageName)} is externalized`;
 					}
-
-					return point;
+					return stdout;
 				})
 				.sort()
 				.join('\n'),

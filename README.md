@@ -6,15 +6,15 @@ _dtsroll_ is a CLI tool for bundling TypeScript declaration (`.d.ts`) files.
 
 - **Smaller distribution**
 
-    Tree-shaking removes unused code, keeping only what's needed and reducing the output size.
+	Tree-shaking removes unused code, keeping only what's needed and reducing the output size.
 
 - **Bundle in private dependencies**
 
-    Inline types from private dependencies (e.g., monorepo packages) that aren't accessible to consumers.
+	Inline types from private dependencies (e.g., monorepo packages) that aren't accessible to consumers.
 
 - **Improve TS performance**
 
-    Flattens multiple files into one, reducing TypeScript's file resolution for type checking.
+	Flattens multiple files into one, reducing TypeScript's file resolution for type checking.
 
 ## Install
 ```
@@ -24,14 +24,14 @@ npm install --save-dev dtsroll
 ## Quick start
 
 1. Compile your TypeScript code with declaration (`.d.ts`) files
-    - If using the TypeScript compiler (`tsc`), enable [`declaration`](https://www.typescriptlang.org/tsconfig/#declaration)
-    - If using Vite, use a plugin like [vite-plugin-dts](https://www.npmjs.com/package/vite-plugin-dts)
+	- If using the TypeScript compiler (`tsc`), enable [`declaration`](https://www.typescriptlang.org/tsconfig/#declaration)
+	- If using Vite, use a plugin like [vite-plugin-dts](https://www.npmjs.com/package/vite-plugin-dts)
 
 2. Pass in the entry declaration file to _dtsroll_
 
-    ```sh
-    dtsroll --dry-run dist/index.d.ts
-    ```
+	```sh
+	dtsroll --dry-run dist/index.d.ts
+	```
 
 > [!CAUTION]
 > _dtsroll_ is designed to run on compiled output so it modifies files in-place.
@@ -41,9 +41,9 @@ npm install --save-dev dtsroll
 
 3. If the changes look good, remove the `--dry-run` flag:
 
-    ```sh
-    dtsroll dist/index.d.ts
-    ```
+	```sh
+	dtsroll dist/index.d.ts
+	```
 
 ### Recommended setup
 
@@ -80,7 +80,7 @@ Because the main package is in `dependencies`,  _dtsroll_ externalizes it. Howev
 
 To fix this, _dtsroll_ will display a warning suggesting you move the `@types/*` package out of `devDependencies`.
 
-## CLI Options
+## CLI
 
 ### --help, -h
 Display usage instructions.
@@ -96,6 +96,37 @@ If there is no `package.json` file, you can specify package names to exclude fro
 
 ### --conditions, -C
 Provide resolution conditions to target specific entry points in dependencies, similar to Node’s [`--conditions`](https://nodejs.org/api/cli.html#-c-condition---conditionscondition).
+
+## Node.js API
+```ts
+import { dtsroll } from 'dtsroll'
+
+await dtsroll({
+    // inputs?: string[];
+    // external?: string[];
+    // conditions?: string[];
+    // dryRun?: boolean;
+})
+```
+
+## Vite plugin
+
+Use it in conjunction with a plugin that generates the initial declaration files like `vite-plugin-dts`.
+
+```ts
+import { defineConfig } from 'vitest/config'
+import dts from 'vite-plugin-dts'
+import { dtsroll } from 'dtsroll/vite'
+
+export default defineConfig({
+    // ...
+    plugins: [
+        // ...
+        dts(),
+        dtsroll()
+    ]
+})
+```
 
 ## Related
 

@@ -86,9 +86,7 @@ const getExternals = (
 	return external;
 };
 
-export const processPackageJson = async (
-	externals: Map<string, string>,
-) => {
+export const getPackageJson = async () => {
 	const packageJsonPath = path.resolve('package.json');
 	const exists = await pathExists(packageJsonPath);
 	if (!exists) {
@@ -102,21 +100,17 @@ export const processPackageJson = async (
 		throw new Error(`Failed to parse package.json at ${packageJsonPath}: ${(error as Error).message}`);
 	}
 
-	const pkgJsonExternals = getExternals(packageJson);
-	pkgJsonExternals.forEach((value, key) => externals.set(key, value));
-
 	return {
+		getExternals: () => getExternals(packageJson),
 		getDtsEntryPoints: () => getDtsEntryPoints(packageJson, path.dirname(packageJsonPath)),
-		getDevTypePackages: () => {
-			if (!packageJson.private && packageJson.devDependencies) {
-				return Object.fromEntries(
+		devTypePackages: (
+			(!packageJson.private && packageJson.devDependencies)
+				? Object.fromEntries(
 					Object.keys(packageJson.devDependencies)
 						.filter(dep => dep.startsWith(typesPrefix))
 						.map(dep => [getOriginalPackageName(dep), dep]),
-				);
-			}
-
-			return {};
-		},
+				)
+				: {}
+		),
 	};
 };
