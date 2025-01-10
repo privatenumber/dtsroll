@@ -10,9 +10,9 @@ export default testSuite(({ describe }) => {
 			await using fixture = await createFixture({
 				src: {
 					'entry.ts': `
-                    import type { A } from './types.js';
-                    export const a: A = 1;
-                    `,
+					import type { A } from './types.js';
+					export const a: A = 1;
+					`,
 					'types.ts': 'export type A = number;',
 				},
 				'tsconfig.json': JSON.stringify({

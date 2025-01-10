@@ -93,21 +93,21 @@ export const dtsroll = async ({
 		}
 
 		/**
-         * There could be file imports here too, but they're hard to distinguish
-         * (e.g. `_dtsroll-chunks/types.d.ts` vs `actual-package`)
-         *
-         * We aggregate them all here and filter later
-         */
+		 * There could be file imports here too, but they're hard to distinguish
+		 * (e.g. `_dtsroll-chunks/types.d.ts` vs `actual-package`)
+		 *
+		 * We aggregate them all here and filter later
+		 */
 		for (const id of file.imports) {
 			moduleImports.add(getPackageName(id));
 		}
 	}
 
 	/**
-     * After the build externalizes modules at the resolution level,
-     * we filter it down against what's actually imported from the
-     * built files
-     */
+	 * After the build externalizes modules at the resolution level,
+	 * we filter it down against what's actually imported from the
+	 * built files
+	 */
 	const externalPackages: Externals = [];
 	moduleImports.forEach((importedSpecifier) => {
 		const reason = externalized.get(importedSpecifier);

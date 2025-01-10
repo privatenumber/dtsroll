@@ -6,9 +6,9 @@ export type Output = OutputChunk & {
 };
 
 export type Externals = [
-    packageName: string,
-    reason?: string,
-    warning?: string
+	packageName: string,
+	reason?: string,
+	warning?: string
 ][];
 
 export type ValidatedInput = [

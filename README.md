@@ -6,15 +6,15 @@ _dtsroll_ is a CLI tool for bundling TypeScript declaration (`.d.ts`) files.
 
 - **Smaller distribution**
 
-    Tree-shaking removes unused code, keeping only what's needed and reducing the output size.
+	Tree-shaking removes unused code, keeping only what's needed and reducing the output size.
 
 - **Bundle in private dependencies**
 
-    Inline types from private dependencies (e.g., monorepo packages) that aren't accessible to consumers.
+	Inline types from private dependencies (e.g., monorepo packages) that aren't accessible to consumers.
 
 - **Improve TS performance**
 
-    Flattens multiple files into one, reducing TypeScript's file resolution for type checking.
+	Flattens multiple files into one, reducing TypeScript's file resolution for type checking.
 
 ## Install
 ```
@@ -24,14 +24,14 @@ npm install --save-dev dtsroll
 ## Quick start
 
 1. Compile your TypeScript code with declaration (`.d.ts`) files
-    - If using the TypeScript compiler (`tsc`), enable [`declaration`](https://www.typescriptlang.org/tsconfig/#declaration)
-    - If using Vite, use a plugin like [vite-plugin-dts](https://www.npmjs.com/package/vite-plugin-dts)
+	- If using the TypeScript compiler (`tsc`), enable [`declaration`](https://www.typescriptlang.org/tsconfig/#declaration)
+	- If using Vite, use a plugin like [vite-plugin-dts](https://www.npmjs.com/package/vite-plugin-dts)
 
 2. Pass in the entry declaration file to _dtsroll_
 
-    ```sh
-    dtsroll --dry-run dist/index.d.ts
-    ```
+	```sh
+	dtsroll --dry-run dist/index.d.ts
+	```
 
 > [!CAUTION]
 > _dtsroll_ is designed to run on compiled output so it modifies files in-place.
@@ -41,9 +41,9 @@ npm install --save-dev dtsroll
 
 3. If the changes look good, remove the `--dry-run` flag:
 
-    ```sh
-    dtsroll dist/index.d.ts
-    ```
+	```sh
+	dtsroll dist/index.d.ts
+	```
 
 ### Recommended setup
 
@@ -52,14 +52,14 @@ Running `dtsroll` without specifying input files will auto-detect them from `pac
 Update your `package.json` to reference `.d.ts` files and include `dtsroll` in the build step:  
 ```diff
  {
-     "name": "my-package",
-     "exports": {
-+        "types": "./dist/index.d.ts",
-         "default": "./dist/index.js"
-     },
-     "scripts": {
-+        "build": "tsc && dtsroll"
-     }
+	 "name": "my-package",
+	 "exports": {
++		"types": "./dist/index.d.ts",
+		 "default": "./dist/index.js"
+	 },
+	 "scripts": {
++		"build": "tsc && dtsroll"
+	 }
  }
 ```
 
@@ -121,7 +121,7 @@ import { dtsroll } from 'dtsroll/vite'
 export default defineConfig({
     // ...
     plugins: [
-    // ...
+        // ...
         dts(),
         dtsroll()
     ]

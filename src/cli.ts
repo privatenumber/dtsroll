@@ -28,8 +28,8 @@ const argv = cli({
 			description: 'Dependency to externalize',
 		},
 		// sourcemap: {
-		//     type: Boolean,
-		//     description: 'Generate sourcemaps',
+		//	 type: Boolean,
+		//	 description: 'Generate sourcemaps',
 		// },
 	},
 });
