@@ -23,22 +23,20 @@ export const removeBundledModulesPlugin = (
 		},
 		async generateBundle(options, bundle) {
 			const modules = Object.values(bundle) as OutputChunk[];
-			const bundledSourceFiles = Array.from(new Set(
-				modules
-					.flatMap(({ moduleIds }) => moduleIds)
-					.filter(moduleId => (
-						// To avoid deleting files from symlinked dependencies
-						moduleId.startsWith(outputDirectory)
-						&& !moduleId.includes(nodeModules)
-					)),
-			));
+			const bundledFiles = Array.from(new Set(modules.flatMap(({ moduleIds }) => moduleIds)));
 
-			const fileSizes = bundledSourceFiles.map(moduleId => this.getModuleInfo(moduleId)!.meta);
+			const fileSizes = bundledFiles.map(moduleId => this.getModuleInfo(moduleId)!.meta);
 			const totalSize = fileSizes.reduce((total, { size }) => total + size, 0);
 			sizeRef.value = totalSize;
 
 			const outputFiles = new Set(modules.map(({ fileName }) => path.join(options.dir!, fileName)));
-			deleteFiles = bundledSourceFiles.filter(moduleId => !outputFiles.has(moduleId));
+
+			deleteFiles = bundledFiles.filter(moduleId => (
+				// To avoid deleting files from symlinked dependencies
+				moduleId.startsWith(outputDirectory)
+				&& !moduleId.includes(nodeModules)
+				&& !outputFiles.has(moduleId)
+			));
 		},
 		writeBundle: async () => {
 			await Promise.all(
