@@ -5,6 +5,7 @@ import {
 } from 'kolorist';
 import type { Output, DtsrollOutput } from '../types.js';
 import { cwd } from './cwd.js';
+import { normalizePath } from './path-utils.js';
 
 const warningSignUnicode = '\u26A0';
 
@@ -20,7 +21,11 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 		inputs
 			.map(([inputFile, inputSource, error]) => {
 				const relativeInputFile = path.relative(cwd, inputFile);
-				const logPath = relativeInputFile.length < inputFile.length ? relativeInputFile : inputFile;
+				const logPath = normalizePath(
+					relativeInputFile.length < inputFile.length
+						? relativeInputFile
+						: inputFile,
+				);
 
 				if (error) {
 					return ` ${lightYellow(`${warningSignUnicode} ${logPath} ${dim(error)}`)}`;
@@ -47,11 +52,11 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 	} = dtsOutput;
 
 	const outputDirectoryRelative = path.relative(cwd, outputDirectory);
-	const logPath = (
+	const logPath = `${normalizePath(
 		outputDirectoryRelative.length < outputDirectory.length
 			? outputDirectoryRelative
-			: outputDirectory
-	) + path.sep;
+			: outputDirectory,
+	)}/`;
 
 	const logChunk = (
 		{
@@ -79,15 +84,15 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 					const prefix = `${indent}   ${isLast ? '└─ ' : '├─ '}`;
 
 					const relativeModuleId = path.relative(cwd, moduleId);
-					const logModuleId = (
+					const logModuleId = normalizePath(
 						relativeModuleId.length < moduleId.length
 							? relativeModuleId
-							: moduleId
+							: moduleId,
 					);
 
 					const bareSpecifier = moduleToPackage[moduleId];
 					if (bareSpecifier) {
-						return `${prefix}${dim(`${magenta(bareSpecifier)} (${logModuleId})`)}`;
+						return `${prefix}${dim(`${magenta(bareSpecifier)} (${(logModuleId)})`)}`;
 					}
 
 					return `${prefix}${dim(logModuleId)}`;
@@ -127,7 +132,11 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 	const direction = difference > 0 ? 'decrease' : 'increase';
 	const percentage = (Math.abs(difference / size.input) * 100).toFixed(0);
 	console.log(`   Input source size:   ${byteSize(size.input).toString()}`);
-	console.log(`   Bundled output size: ${byteSize(size.output).toString()} (${percentage}% ${direction})`);
+	console.log(`   Bundled output size: ${byteSize(size.output).toString()}${
+		difference === 0
+			? ''
+			: ` (${percentage}% ${direction})`
+	}`);
 
 	if (externals.length > 0) {
 		console.log(bold('\n📦 External packages'));

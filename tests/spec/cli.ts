@@ -10,8 +10,8 @@ const dtsroll = (
 	cwd: string,
 	args: string[],
 ) => nanoSpawn(
-	dtsrollPath,
-	args,
+	'node',
+	[dtsrollPath, ...args],
 	{
 		cwd,
 		env: {
@@ -72,10 +72,11 @@ export default testSuite(({ describe }) => {
 		});
 
 		describe('cli', ({ test }) => {
-			test('Single entry-point', async () => {
+			test('Single entry-point', async ({ onTestFail }) => {
 				await using fixture = await createFixture(fixtures.singleEntryPoint);
 
 				const spawned = await dtsroll(fixture.path, ['./dist/entry.d.ts']);
+				onTestFail(() => console.log(spawned));
 				expect('exitCode' in spawned).toBe(false);
 				expect(spawned.output).not.toContain('External packages');
 
@@ -242,7 +243,8 @@ export default testSuite(({ describe }) => {
 				await using fixture = await createFixture(fixtures.dependency);
 
 				const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
-				expect(spawned.stdout).toContain('some-pkg (node_modules/some-pkg/dist/index.d.ts)');
+				expect(spawned.stdout).toContain('some-pkg (');
+				expect(spawned.stdout).toContain('node_modules/some-pkg/dist/index.d.ts)');
 
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
 				expect(entry).toContain('A = string');

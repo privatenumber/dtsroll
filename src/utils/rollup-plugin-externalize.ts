@@ -1,5 +1,5 @@
 import type { Plugin } from 'rollup';
-import { isPath } from './is-path.js';
+import { isPath } from './path-utils.js';
 import { getPackageName } from './package-name.js';
 
 export const createExternalizePlugin = (
