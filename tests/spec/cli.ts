@@ -10,8 +10,8 @@ const dtsroll = (
 	cwd: string,
 	args: string[],
 ) => nanoSpawn(
-	dtsrollPath,
-	args,
+	'node',
+	[dtsrollPath, ...args],
 	{
 		cwd,
 		env: {
