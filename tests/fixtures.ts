@@ -1,14 +1,26 @@
 import outdent from 'outdent';
 
+const dtsFiles = {
+	'dts.d.ts': outdent`
+	export type Foo = string;
+	`,
+	'cts.d.cts': outdent`
+	export type Bar = number;
+	`,
+	'mts.d.mts': outdent`
+	export type Baz = boolean;
+	`,
+};
+
 export const singleEntryPoint = {
 	dist: {
 		'entry.d.ts': outdent`
-		import { Foo } from './file';
-		export declare const value: Foo;
+		import { Foo } from './dts';
+		import { Bar } from './cts';
+		import { Baz } from './mts';
+		export declare const value: Foo | Bar | Baz;
 		`,
-		'file.d.ts': outdent`
-		export type Foo = string; 
-		`,
+		...dtsFiles,
 	},
 };
 
@@ -20,16 +32,16 @@ export const multipleEntryPoints = {
 		`,
 
 		'index.d.ts': outdent`
-		import { Foo } from './dir/common';
-		export declare const valueA: Foo;
+		import { Foo } from './dir/dts';
+		import { Baz } from './dir/mts';
+		export declare const valueA: Foo | Baz;
 		`,
 		'some-dir/index.d.ts': outdent`
-		import { Foo } from '../dir/common';
-		export declare const valueB: Foo;
+		import { Foo } from '../dir/dts';
+		import { Bar } from '../dir/cts';
+		export declare const valueB: Foo | Bar;
 		`,
-		'dir/common.d.ts': outdent`
-		export type Foo = string; 
-		`,
+		dir: dtsFiles,
 	},
 };
 

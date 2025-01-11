@@ -1,6 +1,6 @@
 import type { ValidatedInput } from '../types.js';
 import { pathExists } from './path-exists.js';
-import { dtsExtension } from './constants.js';
+import { isDts } from './dts-extensions.js';
 
 export const validateInput = async (
 	inputFiles: string[] | Record<string, string> | undefined,
@@ -17,8 +17,7 @@ export const validateInput = async (
 
 	return await Promise.all(inputNormalized.map(
 		async ([inputFile, inputSource]): Promise<ValidatedInput> => {
-			const notDts = !inputFile.endsWith(dtsExtension);
-			if (notDts) {
+			if (!isDts(inputFile)) {
 				return [inputFile, inputSource, 'Ignoring non-d.ts input'];
 			}
 

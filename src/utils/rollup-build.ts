@@ -1,7 +1,7 @@
 import { rollup, type RollupOptions } from 'rollup';
 import { dts } from 'rollup-plugin-dts';
 import nodeResolve from '@rollup/plugin-node-resolve';
-import { dtsExtension } from './constants.js';
+import { dtsExtensions, dtsExtension } from './dts-extensions.js';
 import { createExternalizePlugin } from './rollup-plugin-externalize.js';
 import { removeBundledModulesPlugin } from './rollup-plugin-remove-bundled-modules.js';
 
@@ -48,7 +48,7 @@ export const build = async (
 			externalizePlugin,
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
 			nodeResolve({
-				extensions: ['.ts', dtsExtension],
+				extensions: ['.ts', ...dtsExtensions],
 				exportConditions: conditions,
 			}),
 			dts({

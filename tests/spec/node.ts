@@ -14,8 +14,8 @@ export default testSuite(({ describe }) => {
 
 			expect(generated).toMatchObject({
 				size: {
-					input: 88,
-					output: 65,
+					input: 207,
+					output: 118,
 				},
 			});
 		});
@@ -34,8 +34,8 @@ export default testSuite(({ describe }) => {
 			 */
 			expect(generated).toMatchObject({
 				size: {
-					input: 165,
-					output: 255,
+					input: 288,
+					output: 302,
 				},
 			});
 		});

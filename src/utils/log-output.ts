@@ -5,7 +5,10 @@ import {
 } from 'kolorist';
 import type { Output, DtsrollOutput } from '../types.js';
 import { cwd } from './cwd.js';
-import { warningSignUnicode } from './constants.js';
+
+const warningSignUnicode = '\u26A0';
+
+export const warningPrefix = yellow('Warning:');
 
 export const logOutput = (dtsOutput: DtsrollOutput) => {
 	console.log(underline('dtsroll'));
@@ -120,9 +123,11 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 	}
 
 	console.log(bold('\n⚖️ Size savings'));
-	const percentage = (((size.input - size.output) / size.input) * 100).toFixed(0);
+	const difference = size.input - size.output;
+	const direction = difference > 0 ? 'decrease' : 'increase';
+	const percentage = (Math.abs(difference / size.input) * 100).toFixed(0);
 	console.log(`   Input source size:   ${byteSize(size.input).toString()}`);
-	console.log(`   Bundled output size: ${byteSize(size.output).toString()} (${percentage}% decrease)`);
+	console.log(`   Bundled output size: ${byteSize(size.output).toString()} (${percentage}% ${direction})`);
 
 	if (externals.length > 0) {
 		console.log(bold('\n📦 External packages'));
@@ -131,7 +136,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 				.map(([packageName, reason, devTypePackage]) => {
 					let stdout = ` ─ ${magenta(packageName)} ${dim(`externalized ${reason}`)}`;
 					if (devTypePackage) {
-						stdout += `\n   ${yellow('Warning:')} ${magenta(devTypePackage)} should not be in devDependencies if ${magenta(packageName)} is externalized`;
+						stdout += `\n   ${warningPrefix} ${magenta(devTypePackage)} should not be in devDependencies if ${magenta(packageName)} is externalized`;
 					}
 					return stdout;
 				})

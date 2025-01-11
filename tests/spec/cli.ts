@@ -61,6 +61,8 @@ export default testSuite(({ describe }) => {
 				expect(spawned.stderr).toContain('Error: No input files');
 				expect(spawned.stdout).not.toContain('package.json');
 			});
+
+			// TODO: Unresolved paths (not deps)
 		});
 
 		describe('cli', ({ test }) => {
@@ -69,9 +71,12 @@ export default testSuite(({ describe }) => {
 
 				const spawned = await dtsroll(fixture.path, ['./dist/entry.d.ts']);
 				expect('exitCode' in spawned).toBe(false);
+				expect(spawned.output).not.toContain('External packages');
 
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
 				expect(entry).toContain('type Foo = string');
+				expect(entry).toContain('type Bar = number');
+				expect(entry).toContain('type Baz = boolean');
 			});
 
 			test('Multiple entry-point', async ({ onTestFail }) => {
@@ -82,12 +87,12 @@ export default testSuite(({ describe }) => {
 				expect('exitCode' in spawned).toBe(false);
 
 				const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-				expect(indexContent).toContain('import { F as Foo } from \'./_dtsroll-chunks/common.js\'');
+				expect(indexContent).toContain('import { F as Foo } from \'./_dtsroll-chunks/dts.js\'');
 
 				const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-				expect(indexNestedContent).toContain('import { F as Foo } from \'../_dtsroll-chunks/common.js\'');
+				expect(indexNestedContent).toContain('import { F as Foo } from \'../_dtsroll-chunks/dts.js\'');
 
-				const bundledModuleExists = await fixture.exists('dir/common.d.ts');
+				const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 				expect(bundledModuleExists).toBe(false);
 			});
 
@@ -97,6 +102,7 @@ export default testSuite(({ describe }) => {
 				const spawned = await dtsroll(fixture.path, ['./dist/index.d.ts', './dist/some-dir/index.d.ts', '-d']);
 				onTestFail(() => console.log(spawned));
 				expect('exitCode' in spawned).toBe(false);
+				expect(spawned.output).toContain('Dry run');
 
 				const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
 				expect(indexContent).toBe(fixtures.multipleEntryPoints.dist['index.d.ts']);
@@ -178,12 +184,12 @@ export default testSuite(({ describe }) => {
 					expect('exitCode' in spawned).toBe(false);
 
 					const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-					expect(indexContent).toContain('import { F as Foo } from \'./_dtsroll-chunks/common.js\'');
+					expect(indexContent).toContain('import { F as Foo } from \'./_dtsroll-chunks/dts.js\'');
 
 					const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-					expect(indexNestedContent).toContain('import { F as Foo } from \'../_dtsroll-chunks/common.js\'');
+					expect(indexNestedContent).toContain('import { F as Foo } from \'../_dtsroll-chunks/dts.js\'');
 
-					const bundledModuleExists = await fixture.exists('dir/common.d.ts');
+					const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 					expect(bundledModuleExists).toBe(false);
 				});
 			});

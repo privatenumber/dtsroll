@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { PackageJson } from 'type-fest';
-import { dtsExtension } from './constants.js';
+import { isDts } from './dts-extensions.js';
 import { propertyNeedsQuotes } from './property-needs-quotes.js';
 import { pathExists } from './path-exists.js';
 import { typesPrefix, getOriginalPackageName } from './package-name.js';
@@ -23,7 +23,7 @@ const getDtsEntryPoints = (
 		subpath: string,
 		from: string,
 	) => {
-		if (!subpath.endsWith(dtsExtension)) {
+		if (!isDts(subpath)) {
 			return;
 		}
 		const entryPath = path.join(packageJsonDirectory, subpath);

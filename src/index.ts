@@ -1,5 +1,4 @@
 import path from 'node:path';
-import { yellow } from 'kolorist';
 import type { OutputChunk } from 'rollup';
 import { getPackageJson } from './utils/package-json.js';
 import { getCommonDirectory } from './utils/get-common-directory.js';
@@ -7,6 +6,7 @@ import { validateInput } from './utils/validate-input.js';
 import { build } from './utils/rollup-build.js';
 import type { Output, Externals, DtsrollOutput } from './types.js';
 import { getPackageName } from './utils/package-name.js';
+import { warningPrefix } from './utils/log-output.js';
 
 export type Options = {
 	cwd?: string;
@@ -31,7 +31,7 @@ export const dtsroll = async ({
 
 	if (external && external.length > 0) {
 		if (pkgJson) {
-			console.warn(`${yellow('Warning:')} The --external flag is only supported when there is no package.json`);
+			console.warn(`${warningPrefix} The --external flag is only supported when there is no package.json`);
 		} else {
 			for (const externalDependency of external) {
 				externals.set(externalDependency, 'by --external flag');
