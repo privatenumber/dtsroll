@@ -7,12 +7,14 @@ const dtsrollPlugin = (
 ): Plugin => {
 	let built = false;
 	let cwd: string | undefined;
+	let noLog = false;
 	return {
 		name: 'dtsroll',
 		apply: 'build',
 		enforce: 'post',
-		config: ({ root }) => {
+		config: ({ root, logLevel }) => {
 			cwd = root;
+			noLog = logLevel === 'silent';
 		},
 		writeBundle: {
 			sequential: true,
@@ -23,13 +25,19 @@ const dtsrollPlugin = (
 					return;
 				}
 
-				logOutput(await dtsroll({
+				const output = await dtsroll({
 					cwd,
 					...options,
-				}));
-				console.log(); // Enter new line to distinguish from other Vite logs
+				});
 
 				built = true;
+
+				if (!noLog) {
+					logOutput(output);
+
+					// Enter new line to distinguish from other Vite logs
+					console.log();
+				}
 			},
 		},
 	};
