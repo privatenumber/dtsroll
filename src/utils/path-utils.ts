@@ -6,4 +6,4 @@ export const isPath = (
 
 export const normalizePath = (
 	filepath: string,
-) => filepath.replace(/\\/g, '/');
+) => filepath.replaceAll('\\', '/');

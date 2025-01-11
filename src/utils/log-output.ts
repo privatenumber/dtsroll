@@ -24,7 +24,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 				const logPath = normalizePath(
 					relativeInputFile.length < inputFile.length
 						? relativeInputFile
-						: inputFile
+						: inputFile,
 				);
 
 				if (error) {
@@ -52,11 +52,11 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 	} = dtsOutput;
 
 	const outputDirectoryRelative = path.relative(cwd, outputDirectory);
-	const logPath = normalizePath(
+	const logPath = `${normalizePath(
 		outputDirectoryRelative.length < outputDirectory.length
 			? outputDirectoryRelative
-			: outputDirectory
-	) + '/';
+			: outputDirectory,
+	)}/`;
 
 	const logChunk = (
 		{
@@ -87,7 +87,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 					const logModuleId = normalizePath(
 						relativeModuleId.length < moduleId.length
 							? relativeModuleId
-							: moduleId
+							: moduleId,
 					);
 
 					const bareSpecifier = moduleToPackage[moduleId];
