@@ -72,10 +72,11 @@ export default testSuite(({ describe }) => {
 		// });
 
 		describe('cli', ({ test }) => {
-			test('Single entry-point', async () => {
+			test('Single entry-point', async ({ onTestFail }) => {
 				await using fixture = await createFixture(fixtures.singleEntryPoint);
 
 				const spawned = await dtsroll(fixture.path, ['./dist/entry.d.ts']);
+				onTestFail(() => console.log(spawned));
 				expect('exitCode' in spawned).toBe(false);
 				expect(spawned.output).not.toContain('External packages');
 
