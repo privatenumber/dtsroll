@@ -20,8 +20,12 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 	console.log(
 		inputs
 			.map(([inputFile, inputSource, error]) => {
-				const relativeInputFile = normalizePath(path.relative(cwd, inputFile));
-				const logPath = relativeInputFile.length < inputFile.length ? relativeInputFile : inputFile;
+				const relativeInputFile = path.relative(cwd, inputFile);
+				const logPath = normalizePath(
+					relativeInputFile.length < inputFile.length
+						? relativeInputFile
+						: inputFile
+				);
 
 				if (error) {
 					return ` ${lightYellow(`${warningSignUnicode} ${logPath} ${dim(error)}`)}`;
@@ -47,8 +51,8 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 		externals,
 	} = dtsOutput;
 
-	const outputDirectoryRelative = normalizePath(path.relative(cwd, outputDirectory));
-	const logPath = (
+	const outputDirectoryRelative = path.relative(cwd, outputDirectory);
+	const logPath = normalizePath(
 		outputDirectoryRelative.length < outputDirectory.length
 			? outputDirectoryRelative
 			: outputDirectory
@@ -72,10 +76,6 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 
 		const { moduleIds, moduleToPackage } = file;
 
-		console.log({
-			moduleIds,
-			moduleToPackage,
-		});
 		log += `\n${
 			moduleIds
 				.sort()
@@ -83,8 +83,8 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 					const isLast = index === moduleIds.length - 1;
 					const prefix = `${indent}   ${isLast ? '└─ ' : '├─ '}`;
 
-					const relativeModuleId = normalizePath(path.relative(cwd, moduleId));
-					const logModuleId = (
+					const relativeModuleId = path.relative(cwd, moduleId);
+					const logModuleId = normalizePath(
 						relativeModuleId.length < moduleId.length
 							? relativeModuleId
 							: moduleId
@@ -92,7 +92,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 
 					const bareSpecifier = moduleToPackage[moduleId];
 					if (bareSpecifier) {
-						return `${prefix}${dim(`${magenta(bareSpecifier)} (${logModuleId})`)}`;
+						return `${prefix}${dim(`${magenta(bareSpecifier)} (${(logModuleId)})`)}`;
 					}
 
 					return `${prefix}${dim(logModuleId)}`;
