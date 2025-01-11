@@ -62,7 +62,13 @@ export default testSuite(({ describe }) => {
 				expect(spawned.stdout).not.toContain('package.json');
 			});
 
-			// TODO: Unresolved paths (not deps)
+			test('Unresolvable file should error', async () => {
+				const fixture = await createFixture(fixtures.brokenImport);
+
+				const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+				expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
+				expect(spawned.stderr).toContain('Failed to build: Could not resolve "./missing-file" from "dist/entry.d.ts"');
+			});
 		});
 
 		describe('cli', ({ test }) => {

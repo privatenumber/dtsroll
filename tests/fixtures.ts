@@ -12,6 +12,16 @@ const dtsFiles = {
 	`,
 };
 
+export const brokenImport = {
+	dist: {
+		'entry.d.ts': outdent`
+		import { Foo } from './missing-file';
+		export declare const value: Foo;
+		`,
+		...dtsFiles,
+	},
+};
+
 export const singleEntryPoint = {
 	dist: {
 		'entry.d.ts': outdent`

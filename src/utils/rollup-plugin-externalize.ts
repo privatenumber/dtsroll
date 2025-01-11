@@ -48,12 +48,11 @@ export const createExternalizePlugin = (
 
 			if (packageName) {
 				externalized.set(packageName, 'because unresolvable');
+				return {
+					id,
+					external: true,
+				};
 			}
-
-			return {
-				id,
-				external: true,
-			};
 		},
 	} satisfies Plugin;
 
