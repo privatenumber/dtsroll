@@ -2,6 +2,10 @@
 
 _dtsroll_ is a CLI tool for bundling TypeScript declaration (`.d.ts`) files.
 
+<p align="center">
+    <img width="600" src="./.github/screenshot.webp">
+</p>
+
 ### Why bundle `.d.ts` files?
 
 - **Smaller distribution**
