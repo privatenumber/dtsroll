@@ -87,9 +87,13 @@ export default testSuite(({ describe }) => {
 			});
 
 			test('Multiple entry-point', async ({ onTestFail }) => {
-				await using fixture = await createFixture(fixtures.multipleEntryPoints);
+				const fixture = await createFixture(fixtures.multipleEntryPoints);
 
-				const spawned = await dtsroll(fixture.path, ['./dist/index.d.ts', './dist/some-dir/index.d.ts']);
+				const spawned = await dtsroll(fixture.path, [
+					'./dist/index.d.ts',
+					'./dist/some-dir/index.d.ts',
+					'./dist/dir/mts.d.mts',
+				]);
 				onTestFail(() => console.log(spawned));
 				expect('exitCode' in spawned).toBe(false);
 
@@ -98,6 +102,9 @@ export default testSuite(({ describe }) => {
 
 				const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
 				expect(indexNestedContent).toContain('import { F as Foo } from \'../_dtsroll-chunks/dts.js\'');
+
+				const mtsContent = await fixture.readFile('dist/dir/mts.d.mts', 'utf8');
+				expect(mtsContent).toContain('type Baz = boolean');
 
 				const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 				expect(bundledModuleExists).toBe(false);
@@ -198,6 +205,9 @@ export default testSuite(({ describe }) => {
 
 					const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 					expect(bundledModuleExists).toBe(false);
+
+					const chunkExists = await fixture.exists('dist/_dtsroll-chunks/dts.d.ts');
+					expect(chunkExists).toBe(true);
 				});
 			});
 

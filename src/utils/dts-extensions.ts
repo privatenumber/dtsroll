@@ -1,8 +1,4 @@
-export const dtsExtension = '.d.ts';
-const dctsExtension = '.d.cts';
-const dmtsExtension = '.d.mts';
-
-export const dtsExtensions = [dtsExtension, dctsExtension, dmtsExtension];
+export const dtsExtensions = ['.d.ts', '.d.cts', '.d.mts'];
 
 export const isDts = (
 	fileName: string,

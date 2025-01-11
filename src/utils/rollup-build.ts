@@ -1,7 +1,7 @@
 import { rollup, type RollupOptions } from 'rollup';
 import { dts } from 'rollup-plugin-dts';
 import nodeResolve from '@rollup/plugin-node-resolve';
-import { dtsExtensions, dtsExtension } from './dts-extensions.js';
+import { dtsExtensions } from './dts-extensions.js';
 import { createExternalizePlugin } from './rollup-plugin-externalize.js';
 import { removeBundledModulesPlugin } from './rollup-plugin-remove-bundled-modules.js';
 
@@ -16,7 +16,7 @@ const createInputMap = (
 	outputDirectory: string,
 ) => Object.fromEntries(
 	input.map(inputFile => [
-		inputFile.slice(outputDirectory.length + 1).slice(0, -dtsExtension.length),
+		inputFile.slice(outputDirectory.length + 1),
 		inputFile,
 	]),
 );
@@ -41,6 +41,7 @@ export const build = async (
 		output: {
 			// sourcemap: true,
 			dir: outputDirectory,
+			entryFileNames: '[name]',
 			chunkFileNames: '_dtsroll-chunks/[name].ts',
 		},
 
