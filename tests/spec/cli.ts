@@ -243,6 +243,7 @@ export default testSuite(({ describe }) => {
 				await using fixture = await createFixture(fixtures.dependency);
 
 				const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+				console.log(spawned);
 				expect(spawned.stdout).toContain('some-pkg (node_modules/some-pkg/dist/index.d.ts)');
 
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');

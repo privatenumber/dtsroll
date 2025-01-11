@@ -92,6 +92,11 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 
 					const bareSpecifier = moduleToPackage[moduleId];
 					if (bareSpecifier) {
+						console.log({
+							logModuleId,
+							outputDirectory,
+							outputDirectoryRelative
+						});
 						return `${prefix}${dim(`${magenta(bareSpecifier)} (${(logModuleId)})`)}`;
 					}
 
@@ -132,7 +137,11 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 	const direction = difference > 0 ? 'decrease' : 'increase';
 	const percentage = (Math.abs(difference / size.input) * 100).toFixed(0);
 	console.log(`   Input source size:   ${byteSize(size.input).toString()}`);
-	console.log(`   Bundled output size: ${byteSize(size.output).toString()} (${percentage}% ${direction})`);
+	console.log(`   Bundled output size: ${byteSize(size.output).toString()}${
+		difference === 0
+			? ''
+			: ` (${percentage}% ${direction})`
+	}`);
 
 	if (externals.length > 0) {
 		console.log(bold('\n📦 External packages'));
