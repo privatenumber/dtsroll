@@ -72,6 +72,10 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 
 		const { moduleIds, moduleToPackage } = file;
 
+		console.log({
+			moduleIds,
+			moduleToPackage,
+		});
 		log += `\n${
 			moduleIds
 				.sort()
