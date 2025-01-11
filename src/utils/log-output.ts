@@ -6,6 +6,7 @@ import {
 import type { Output, DtsrollOutput } from '../types.js';
 import { cwd } from './cwd.js';
 
+const normalizePath = (path: string) => path.replace(/\\/g, '/');
 const warningSignUnicode = '\u26A0';
 
 export const warningPrefix = yellow('Warning:');
@@ -19,7 +20,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 	console.log(
 		inputs
 			.map(([inputFile, inputSource, error]) => {
-				const relativeInputFile = path.relative(cwd, inputFile);
+				const relativeInputFile = normalizePath(path.relative(cwd, inputFile));
 				const logPath = relativeInputFile.length < inputFile.length ? relativeInputFile : inputFile;
 
 				if (error) {
@@ -46,12 +47,12 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 		externals,
 	} = dtsOutput;
 
-	const outputDirectoryRelative = path.relative(cwd, outputDirectory);
+	const outputDirectoryRelative = normalizePath(path.relative(cwd, outputDirectory));
 	const logPath = (
 		outputDirectoryRelative.length < outputDirectory.length
 			? outputDirectoryRelative
 			: outputDirectory
-	) + path.sep;
+	) + '/';
 
 	const logChunk = (
 		{
@@ -78,7 +79,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 					const isLast = index === moduleIds.length - 1;
 					const prefix = `${indent}   ${isLast ? '└─ ' : '├─ '}`;
 
-					const relativeModuleId = path.relative(cwd, moduleId);
+					const relativeModuleId = normalizePath(path.relative(cwd, moduleId));
 					const logModuleId = (
 						relativeModuleId.length < moduleId.length
 							? relativeModuleId
