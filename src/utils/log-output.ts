@@ -93,6 +93,8 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 					const bareSpecifier = moduleToPackage[moduleId];
 					if (bareSpecifier) {
 						console.log({
+							relativeModuleId,
+							moduleId,
 							logModuleId,
 							outputDirectory,
 							outputDirectoryRelative
