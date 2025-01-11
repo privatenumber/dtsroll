@@ -5,8 +5,8 @@ import {
 } from 'kolorist';
 import type { Output, DtsrollOutput } from '../types.js';
 import { cwd } from './cwd.js';
+import { normalizePath } from './path-utils.js';
 
-const normalizePath = (path: string) => path.replace(/\\/g, '/');
 const warningSignUnicode = '\u26A0';
 
 export const warningPrefix = yellow('Warning:');
