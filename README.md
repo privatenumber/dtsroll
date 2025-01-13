@@ -95,7 +95,7 @@ To fix this, _dtsroll_ will display a warning suggesting you move the `@types/*`
 
 ### Usage
 ```sh
-dtsroll [-flags] [...input files]
+dtsroll [-flags] [...entry dts files]
 ```
 
 The default usage is to run `dtsroll` without any flags/arguments in a directory containing a `package.json` file. This allows the configuration to be inferred automatically.
