@@ -93,6 +93,13 @@ To fix this, _dtsroll_ will display a warning suggesting you move the `@types/*`
 
 ## CLI
 
+### Usage
+```sh
+dtsroll [-flags] [...input files]
+```
+
+The default usage is to run `dtsroll` without any flags/arguments in a directory containing a `package.json` file. This allows the configuration to be inferred automatically.
+
 ### --help, -h
 Display usage instructions.
 
