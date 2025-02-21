@@ -43,7 +43,7 @@ export const dtsroll = async ({
 	const validatedInputs = await validateInput(
 		manualInput
 			? inputs.map(file => path.resolve(file))
-			: pkgJson?.getDtsEntryPoints(),
+			: await pkgJson?.getDtsEntryPoints(),
 	);
 
 	const inputFiles = validatedInputs

@@ -52,6 +52,11 @@ export const multipleEntryPoints = {
 		export declare const valueB: Foo | Bar;
 		`,
 		dir: dtsFiles,
+		star: {
+			'a.d.ts': 'export declare const a: string;',
+			'b.d.ts': 'export declare const b: string;',
+			'c.d.ts': 'export declare const c: string;',
+		},
 	},
 };
 

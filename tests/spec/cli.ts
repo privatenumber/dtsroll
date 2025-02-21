@@ -189,6 +189,10 @@ export default testSuite(({ describe }) => {
 									types: './dist/some-dir/index.d.ts',
 									default: './dist/ignore-me.ts',
 								},
+								'./star/*': {
+									types: './dist/star/*',
+									default: './dist/star/*.ts',
+								},
 							},
 						}),
 					});
@@ -208,6 +212,15 @@ export default testSuite(({ describe }) => {
 
 					const chunkExists = await fixture.exists('dist/_dtsroll-chunks/dts.d.ts');
 					expect(chunkExists).toBe(true);
+
+					const starAContent = await fixture.readFile('dist/star/a.d.ts', 'utf8');
+					expect(starAContent).toContain('declare const a: string');
+
+					const starBContent = await fixture.readFile('dist/star/b.d.ts', 'utf8');
+					expect(starBContent).toContain('declare const b: string');
+
+					const starCContent = await fixture.readFile('dist/star/c.d.ts', 'utf8');
+					expect(starCContent).toContain('declare const c: string');
 				});
 			});
 
