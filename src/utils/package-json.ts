@@ -5,6 +5,7 @@ import { isDts } from './dts-extensions.js';
 import { propertyNeedsQuotes } from './property-needs-quotes.js';
 import { pathExists } from './path-exists.js';
 import { typesPrefix, getOriginalPackageName } from './package-name.js';
+import { getAllFiles } from './get-all-files.js';
 
 const readPackageJson = async (
 	filePath: string,
@@ -13,7 +14,31 @@ const readPackageJson = async (
 	return JSON.parse(packageJsonString) as PackageJson;
 };
 
-const getDtsEntryPoints = (
+const traverseExports = (
+	exportValue: PackageJson['exports'],
+	propertyPath: string,
+): [subpath: string, fromProperty: string][] => {
+	if (typeof exportValue === 'string') {
+		return [[exportValue, propertyPath]];
+	}
+
+	if (Array.isArray(exportValue)) {
+		return exportValue.flatMap((value, index) => traverseExports(value, `${propertyPath}[${index}]`));
+	}
+
+	if (typeof exportValue === 'object' && exportValue !== null) {
+		return Object.entries(exportValue).flatMap(([property, value]) => {
+			const newProperty = propertyNeedsQuotes(property)
+				? `["${property}"]`
+				: `.${property}`;
+			return traverseExports(value, propertyPath + newProperty);
+		});
+	}
+
+	return [];
+};
+
+const getDtsEntryPoints = async (
 	packageJson: PackageJson,
 	packageJsonDirectory: string,
 ) => {
@@ -42,21 +67,25 @@ const getDtsEntryPoints = (
 	}
 
 	if (packageJson.exports) {
-		(function gather(
-			exportValue: PackageJson['exports'],
-			propertyPath: string,
-		) {
-			if (typeof exportValue === 'string') {
-				addEntry(exportValue, propertyPath);
-			} else if (Array.isArray(exportValue)) {
-				exportValue.forEach((value, index) => gather(value, `${propertyPath}[${index}]`));
-			} if (typeof exportValue === 'object' && exportValue) {
-				for (const [property, value] of Object.entries(exportValue)) {
-					const newProperty = propertyNeedsQuotes(property) ? `["${property}"]` : `.${property}`;
-					gather(value, propertyPath + newProperty);
+		const subpaths = traverseExports(packageJson.exports, 'exports');
+		let packageFiles: string[] | undefined;
+		for (const [subpath, fromProperty] of subpaths) {
+			if (!subpath.includes('*')) {
+				addEntry(subpath, fromProperty);
+				continue;
+			}
+
+			if (!packageFiles) {
+				packageFiles = await getAllFiles(packageJsonDirectory);
+			}
+
+			const [prefix, suffix] = subpath.split('*', 2);
+			for (const file of packageFiles) {
+				if (file.startsWith(prefix!) && file.endsWith(suffix!)) {
+					addEntry(file, fromProperty);
 				}
 			}
-		})(packageJson.exports, 'exports');
+		}
 	}
 
 	return entryPoints;
