@@ -42,7 +42,7 @@ export const build = async (
 			// sourcemap: true,
 			dir: outputDirectory,
 			entryFileNames: '[name]',
-			chunkFileNames: '_dtsroll-chunks/[name].ts',
+			chunkFileNames: '_dtsroll-chunks/[hash]-[name].ts',
 		},
 
 		plugins: [
