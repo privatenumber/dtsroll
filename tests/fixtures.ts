@@ -60,6 +60,29 @@ export const multipleEntryPoints = {
 	},
 };
 
+export const multipleEntryPointsSameChunkName = {
+	dist: {
+		'aa.d.ts': outdent`
+		import { Foo } from './a/foo';
+		export declare const valueA: Foo;
+		`,
+		'ab.d.ts': outdent`
+		import { Foo } from './a/foo';
+		export declare const valueA: Foo;
+		`,
+		'ba.d.ts': outdent`
+		import { Foo } from './b/foo';
+		export declare const valueB: Foo;
+		`,
+		'bb.d.ts': outdent`
+		import { Foo } from './b/foo';
+		export declare const valueB: Foo;
+		`,
+		'a/foo.d.ts': 'export type Foo = string;',
+		'b/foo.d.ts': 'export type Foo = string;',
+	},
+};
+
 export const externalsNodeBuiltins = {
 	dist: {
 		'entry.d.ts': outdent`

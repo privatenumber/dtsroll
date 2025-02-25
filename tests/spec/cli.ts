@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { expect, testSuite } from 'manten';
 import { createFixture } from 'fs-fixture';
@@ -22,7 +23,7 @@ const dtsroll = (
 ).catch(error => error as SubprocessError);
 
 export default testSuite(({ describe }) => {
-	describe('cli', ({ describe }) => {
+	describe('cli', ({ describe, test }) => {
 		describe('errors', ({ test }) => {
 			test('No inputs', async () => {
 				await using fixture = await createFixture({});
@@ -98,10 +99,10 @@ export default testSuite(({ describe }) => {
 				expect('exitCode' in spawned).toBe(false);
 
 				const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-				expect(indexContent).toContain('import { F as Foo } from \'./_dtsroll-chunks/dts.js\'');
+				expect(indexContent).toMatch(/import \{ F as Foo \} from '.\/_dtsroll-chunks\/.+-dts.js'/);
 
 				const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-				expect(indexNestedContent).toContain('import { F as Foo } from \'../_dtsroll-chunks/dts.js\'');
+				expect(indexNestedContent).toMatch(/import \{ F as Foo \} from '..\/_dtsroll-chunks\/.+-dts.js'/);
 
 				const mtsContent = await fixture.readFile('dist/dir/mts.d.mts', 'utf8');
 				expect(mtsContent).toContain('type Baz = boolean');
@@ -202,15 +203,20 @@ export default testSuite(({ describe }) => {
 					expect('exitCode' in spawned).toBe(false);
 
 					const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-					expect(indexContent).toContain('import { F as Foo } from \'./_dtsroll-chunks/dts.js\'');
+
+					const chunkNamePattern = /import \{ F as Foo \} from '.\/(_dtsroll-chunks\/.+-dts.js)'/;
+					const chunkNameMatch = indexContent.match(chunkNamePattern);
+					expect(chunkNameMatch).toBeTruthy();
+
+					const chunkImportPath = chunkNameMatch![1];
 
 					const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-					expect(indexNestedContent).toContain('import { F as Foo } from \'../_dtsroll-chunks/dts.js\'');
+					expect(indexNestedContent).toContain(`import { F as Foo } from '../${chunkImportPath}'`);
 
 					const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 					expect(bundledModuleExists).toBe(false);
 
-					const chunkExists = await fixture.exists('dist/_dtsroll-chunks/dts.d.ts');
+					const chunkExists = await fixture.exists(`dist/${chunkImportPath!.replace('.js', '.d.ts')}`);
 					expect(chunkExists).toBe(true);
 
 					const starAContent = await fixture.readFile('dist/star/a.d.ts', 'utf8');
@@ -394,6 +400,30 @@ export default testSuite(({ describe }) => {
 					expect(entry).not.toContain('\'some-pkg\'');
 				});
 			});
+		});
+
+		test('Chunk names dont collide', async ({ onTestFail }) => {
+			await using fixture = await createFixture({
+				...fixtures.multipleEntryPointsSameChunkName,
+				'package.json': JSON.stringify({
+					exports: {
+						'./aa': './dist/aa.d.ts',
+						'./ab': './dist/ab.d.ts',
+						'./ba': './dist/ba.d.ts',
+						'./bb': './dist/bb.d.ts',
+					},
+				}),
+			});
+
+			const spawned = await dtsroll(fixture.path, []);
+			onTestFail(() => console.log(spawned));
+			expect('exitCode' in spawned).toBe(false);
+
+			const chunks = await fs.readdir(fixture.getPath('dist/_dtsroll-chunks'));
+			expect(chunks.length).toBe(2);
+
+			// Previously, it would create .d2.ts, .d3.ts, .d4.ts, when they would collide
+			expect(chunks.every(file => file.endsWith('.d.ts'))).toBeTruthy();
 		});
 	});
 });

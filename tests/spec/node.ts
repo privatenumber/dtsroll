@@ -35,7 +35,7 @@ export default testSuite(({ describe }) => {
 			expect(generated).toMatchObject({
 				size: {
 					input: 288,
-					output: 302,
+					output: 320,
 				},
 			});
 		});
