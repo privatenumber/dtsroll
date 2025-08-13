@@ -33,7 +33,7 @@
 		"#dtsroll": "./src/index.ts",
 		"#dtsroll/vite": "./src/vite.ts"
 	},
-	"packageManager": "pnpm@9.15.3",
+	"packageManager": "pnpm@10.14.0",
 	"scripts": {
 		"build": "pkgroll",
 		"test": "pnpm build && tsx tests/index.ts",
