@@ -1,4 +1,4 @@
-import type { OutputChunk } from 'rollup';
+import type { OutputChunk } from 'rolldown';
 
 export type Output = OutputChunk & {
 	size: number;

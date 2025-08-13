@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { OutputChunk } from 'rollup';
+import type { OutputChunk } from 'rolldown';
 import { getPackageJson } from './utils/package-json.js';
 import { getCommonDirectory } from './utils/get-common-directory.js';
 import { validateInput } from './utils/validate-input.js';

@@ -1,4 +1,4 @@
-import type { Plugin } from 'rollup';
+import type { Plugin } from 'rolldown';
 import { isPath } from './path-utils.js';
 import { getPackageName } from './package-name.js';
 

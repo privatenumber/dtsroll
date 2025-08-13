@@ -1,6 +1,6 @@
-import { rollup, type RollupOptions } from 'rollup';
-import { dts } from 'rollup-plugin-dts';
-import nodeResolve from '@rollup/plugin-node-resolve';
+import { rolldown, type RolldownOptions } from 'rolldown';
+import { dts } from 'rolldown-plugin-dts'
+// import nodeResolve from '@rollup/plugin-node-resolve';
 import { dtsExtensions } from './dts-extensions.js';
 import { createExternalizePlugin } from './rollup-plugin-externalize.js';
 import { removeBundledModulesPlugin } from './rollup-plugin-remove-bundled-modules.js';
@@ -15,10 +15,24 @@ const createInputMap = (
 	input: string[],
 	outputDirectory: string,
 ) => Object.fromEntries(
-	input.map(inputFile => [
-		inputFile.slice(outputDirectory.length + 1),
-		inputFile,
-	]),
+	input.map(inputFile => {
+		let name = inputFile.slice(outputDirectory.length + 1);
+
+		// if (name.endsWith('.ts')) {
+		// 	name = name.slice(0, -'.ts'.length);
+		// }
+		// else if (name.endsWith('.mts')) {
+		// 	name = name.slice(0, -'.mts'.length);
+		// }
+		// else if (name.endsWith('.cts')) {
+		// 	name = name.slice(0, -'.cts'.length);
+		// }
+
+		return [
+			name,
+			inputFile,
+		];
+	}),
 );
 
 export const build = async (
@@ -48,12 +62,15 @@ export const build = async (
 		plugins: [
 			externalizePlugin,
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
-			nodeResolve({
-				extensions: ['.ts', ...dtsExtensions],
-				exportConditions: conditions,
-			}),
+			// nodeResolve({
+			// 	extensions: ['.ts', ...dtsExtensions],
+			// 	exportConditions: conditions,
+			// }),
 			dts({
-				respectExternal: true,
+				emitDtsOnly: true,
+				dtsInput: true,
+				// resolve: true,
+				// respectExternal: true,
 
 				/**
 				 * Setting a tsconfig or compilerOptions shouldn't be necessary since
@@ -64,11 +81,16 @@ export const build = async (
 				 */
 			}),
 		],
-	} satisfies RollupOptions;
+	} satisfies RolldownOptions;
 
-	const rollupBuild = await rollup(rollupConfig);
+	const rollupBuild = await rolldown(rollupConfig);
 	const built = await rollupBuild[mode](rollupConfig.output);
 
+	console.log({ input });
+	
+	console.dir(built, { depth: 3, maxArrayLength: null });
+	
+	
 	await rollupBuild.close();
 
 	return {
