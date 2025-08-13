@@ -3,7 +3,7 @@ import path from 'node:path';
 import { expect, testSuite } from 'manten';
 import { createFixture } from 'fs-fixture';
 import nanoSpawn, { type SubprocessError } from 'nano-spawn';
-import * as fixtures from '../fixtures';
+import * as fixtures from '../fixtures.js';
 
 const dtsrollPath = path.resolve('./dist/cli.mjs');
 

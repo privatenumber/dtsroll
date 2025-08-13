@@ -8,13 +8,13 @@ export type Output = OutputChunk & {
 export type Externals = [
 	packageName: string,
 	reason?: string,
-	warning?: string
+	warning?: string,
 ][];
 
 export type ValidatedInput = [
 	inputPath: string,
 	inputSource: string | undefined,
-	error?: string
+	error?: string,
 ];
 
 export type DtsrollOutput = {
