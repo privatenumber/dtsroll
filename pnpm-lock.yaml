@@ -21,8 +21,8 @@ importers:
         specifier: 1.0.0-beta.32
         version: 1.0.0-beta.32
       rolldown-plugin-dts:
-        specifier: ^0.15.6
-        version: 0.15.6(rolldown@1.0.0-beta.32)(typescript@5.9.2)
+        specifier: github:privatenumber/rolldown-plugin-dts#npm/main
+        version: https://codeload.github.com/privatenumber/rolldown-plugin-dts/tar.gz/b22de73a59383ac93ebac4f17dab99973dc05f25(rolldown@1.0.0-beta.32)(typescript@5.9.2)
     devDependencies:
       '@types/byte-size':
         specifier: ^8.1.2
@@ -2418,8 +2418,9 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rolldown-plugin-dts@0.15.6:
-    resolution: {integrity: sha512-AxQlyx3Nszob5QLmVUjz/VnC5BevtUo0h8tliuE0egddss7IbtCBU7GOe7biRU0fJNRQJmQjPKXFcc7K98j3+w==}
+  rolldown-plugin-dts@https://codeload.github.com/privatenumber/rolldown-plugin-dts/tar.gz/b22de73a59383ac93ebac4f17dab99973dc05f25:
+    resolution: {tarball: https://codeload.github.com/privatenumber/rolldown-plugin-dts/tar.gz/b22de73a59383ac93ebac4f17dab99973dc05f25}
+    version: 0.15.6
     engines: {node: '>=20.18.0'}
     peerDependencies:
       '@typescript/native-preview': '>=7.0.0-dev.20250601.1'
@@ -5520,7 +5521,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rolldown-plugin-dts@0.15.6(rolldown@1.0.0-beta.32)(typescript@5.9.2):
+  rolldown-plugin-dts@https://codeload.github.com/privatenumber/rolldown-plugin-dts/tar.gz/b22de73a59383ac93ebac4f17dab99973dc05f25(rolldown@1.0.0-beta.32)(typescript@5.9.2):
     dependencies:
       '@babel/generator': 7.28.0
       '@babel/parser': 7.28.0

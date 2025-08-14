@@ -1,5 +1,5 @@
 import { rolldown, type RolldownOptions } from 'rolldown';
-import { dts } from 'rolldown-plugin-dts'
+import { dts } from 'rolldown-plugin-dts';
 // import nodeResolve from '@rollup/plugin-node-resolve';
 import { dtsExtensions } from './dts-extensions.js';
 import { createExternalizePlugin } from './rollup-plugin-externalize.js';
@@ -15,19 +15,8 @@ const createInputMap = (
 	input: string[],
 	outputDirectory: string,
 ) => Object.fromEntries(
-	input.map(inputFile => {
-		let name = inputFile.slice(outputDirectory.length + 1);
-
-		// if (name.endsWith('.ts')) {
-		// 	name = name.slice(0, -'.ts'.length);
-		// }
-		// else if (name.endsWith('.mts')) {
-		// 	name = name.slice(0, -'.mts'.length);
-		// }
-		// else if (name.endsWith('.cts')) {
-		// 	name = name.slice(0, -'.cts'.length);
-		// }
-
+	input.map((inputFile) => {
+		const name = inputFile.slice(outputDirectory.length + 1);
 		return [
 			name,
 			inputFile,
@@ -86,11 +75,6 @@ export const build = async (
 	const rollupBuild = await rolldown(rollupConfig);
 	const built = await rollupBuild[mode](rollupConfig.output);
 
-	console.log({ input });
-	
-	console.dir(built, { depth: 3, maxArrayLength: null });
-	
-	
 	await rollupBuild.close();
 
 	return {

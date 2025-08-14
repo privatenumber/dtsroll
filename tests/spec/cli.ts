@@ -63,15 +63,13 @@ export default testSuite(({ describe }) => {
 				expect(spawned.stdout).not.toContain('package.json');
 			});
 
-			// test('Unresolvable file should error', async () => {
-			// 	await using fixture = await createFixture(fixtures.brokenImport);
+			test('Unresolvable file should error', async () => {
+				await using fixture = await createFixture(fixtures.brokenImport);
 
-			// 	const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
-			// 	console.log(spawned);
-				
-			// 	expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
-			// 	expect(spawned.stderr).toContain('Failed to build: Could not resolve "./missing-file" from "dist/entry.d.ts"');
-			// });
+				const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+				expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
+				expect(spawned.stderr).toContain('Cannot resolve import \'./missing-file\' from');
+			});
 		});
 
 		describe('cli', ({ test }) => {
@@ -91,7 +89,7 @@ export default testSuite(({ describe }) => {
 
 			test('Multiple entry-point', async ({ onTestFail }) => {
 				await using fixture = await createFixture(fixtures.multipleEntryPoints);
-				
+
 				const spawned = await dtsroll(fixture.path, [
 					'./dist/index.d.ts',
 					'./dist/some-dir/index.d.ts',
@@ -101,10 +99,10 @@ export default testSuite(({ describe }) => {
 				expect('exitCode' in spawned).toBe(false);
 
 				const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-				expect(indexContent).toMatch(/import \{ Foo \} from ".\/_dtsroll-chunks\/.+-dts.js"/);
+				expect(indexContent).toMatch(/import \{ Foo \} from ".\/_dtsroll-chunks\/.+-dts.ts"/);
 
 				const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-				expect(indexNestedContent).toMatch(/import \{ Foo \} from "..\/_dtsroll-chunks\/.+-dts.js"/);
+				expect(indexNestedContent).toMatch(/import \{ Foo \} from "..\/_dtsroll-chunks\/.+-dts.ts"/);
 
 				const mtsContent = await fixture.readFile('dist/dir/mts.d.mts', 'utf8');
 				expect(mtsContent).toContain('export { Baz }');
@@ -206,7 +204,7 @@ export default testSuite(({ describe }) => {
 
 					const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
 
-					const chunkNamePattern = /import \{ Foo \} from ".\/(_dtsroll-chunks\/.+-dts.js)"/;
+					const chunkNamePattern = /import \{ Foo \} from ".\/(_dtsroll-chunks\/.+-dts.ts)"/;
 					const chunkNameMatch = indexContent.match(chunkNamePattern);
 					expect(chunkNameMatch).toBeTruthy();
 
@@ -270,137 +268,137 @@ export default testSuite(({ describe }) => {
 				expect(entry).toContain('from "some-dep"');
 			});
 
-		// 	test('Bundles dependency', async () => {
-		// 		await using fixture = await createFixture(fixtures.dependency);
+			// 	test('Bundles dependency', async () => {
+			// 		await using fixture = await createFixture(fixtures.dependency);
 
-		// 		const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
-		// 		expect(spawned.stdout).toContain('some-pkg (');
-		// 		expect(spawned.stdout).toContain('node_modules/some-pkg/dist/index.d.ts)');
+			// 		const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+			// 		expect(spawned.stdout).toContain('some-pkg (');
+			// 		expect(spawned.stdout).toContain('node_modules/some-pkg/dist/index.d.ts)');
 
-		// 		const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-		// 		expect(entry).toContain('A = string');
-		// 	});
+			// 		const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+			// 		expect(entry).toContain('A = string');
+			// 	});
 
-		// 	test('Externalizes dependency via package.json', async () => {
-		// 		await using fixture = await createFixture({
-		// 			...fixtures.dependency,
-		// 			'package.json': JSON.stringify({
-		// 				dependencies: {
-		// 					'some-pkg': '*',
-		// 				},
-		// 			}),
-		// 		});
+			// 	test('Externalizes dependency via package.json', async () => {
+			// 		await using fixture = await createFixture({
+			// 			...fixtures.dependency,
+			// 			'package.json': JSON.stringify({
+			// 				dependencies: {
+			// 					'some-pkg': '*',
+			// 				},
+			// 			}),
+			// 		});
 
-		// 		const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
-		// 		expect(spawned.stdout).toContain('─ some-pkg externalized by package.json dependencies');
+			// 		const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+			// 		expect(spawned.stdout).toContain('─ some-pkg externalized by package.json dependencies');
 
-		// 		const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-		// 		expect(entry).toContain('"some-pkg"');
-		// 	});
+			// 		const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+			// 		expect(entry).toContain('"some-pkg"');
+			// 	});
 
-		// 	test('--external flag', async () => {
-		// 		await using fixture = await createFixture(fixtures.dependency);
+			// 	test('--external flag', async () => {
+			// 		await using fixture = await createFixture(fixtures.dependency);
 
-		// 		const spawned = await dtsroll(fixture.path, ['--external', 'some-pkg', 'dist/entry.d.ts']);
-		// 		expect(spawned.stdout).toContain('─ some-pkg externalized by --external flag');
+			// 		const spawned = await dtsroll(fixture.path, ['--external', 'some-pkg', 'dist/entry.d.ts']);
+			// 		expect(spawned.stdout).toContain('─ some-pkg externalized by --external flag');
 
-		// 		const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-		// 		expect(entry).toContain('"some-pkg"');
-		// 	});
+			// 		const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+			// 		expect(entry).toContain('"some-pkg"');
+			// 	});
 
-		// 	test('--external flag ignored if theres a package.json', async () => {
-		// 		await using fixture = await createFixture({
-		// 			...fixtures.dependency,
-		// 			'package.json': JSON.stringify({}),
-		// 		});
+			// 	test('--external flag ignored if theres a package.json', async () => {
+			// 		await using fixture = await createFixture({
+			// 			...fixtures.dependency,
+			// 			'package.json': JSON.stringify({}),
+			// 		});
 
-		// 		const spawned = await dtsroll(fixture.path, ['--external', 'some-pkg', 'dist/entry.d.ts']);
-		// 		expect(spawned.stderr).toContain('The --external flag is only supported when there is no package.json');
+			// 		const spawned = await dtsroll(fixture.path, ['--external', 'some-pkg', 'dist/entry.d.ts']);
+			// 		expect(spawned.stderr).toContain('The --external flag is only supported when there is no package.json');
 
-		// 		const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-		// 		expect(entry).toContain('A = string');
-		// 	});
+			// 		const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+			// 		expect(entry).toContain('A = string');
+			// 	});
 
 			describe('Externalizes @types', ({ test }) => {
-		// 		test('Warning', async () => {
-		// 			await using fixture = await createFixture({
-		// 				...fixtures.dependencyWithAtType,
-		// 				'package.json': JSON.stringify({
-		// 					dependencies: {
-		// 						'some-pkg': '*',
-		// 					},
-		// 					devDependencies: {
-		// 						'@types/some-pkg': '*',
-		// 					},
-		// 				}),
-		// 			});
+				// 		test('Warning', async () => {
+				// 			await using fixture = await createFixture({
+				// 				...fixtures.dependencyWithAtType,
+				// 				'package.json': JSON.stringify({
+				// 					dependencies: {
+				// 						'some-pkg': '*',
+				// 					},
+				// 					devDependencies: {
+				// 						'@types/some-pkg': '*',
+				// 					},
+				// 				}),
+				// 			});
 
-		// 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
-		// 			expect(spawned.stdout).toContain('Warning: @types/some-pkg should not be in devDependencies if some-pkg is externalized');
+				// 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+				// 			expect(spawned.stdout).toContain('Warning: @types/some-pkg should not be in devDependencies if some-pkg is externalized');
 
-		// 			const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-		// 			expect(entry).toContain('"some-pkg"');
-		// 		});
+				// 			const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+				// 			expect(entry).toContain('"some-pkg"');
+				// 		});
 
-		// 		test('No warning if externalized', async () => {
-		// 			await using fixture = await createFixture({
-		// 				...fixtures.dependencyWithAtType,
-		// 				'package.json': JSON.stringify({
-		// 					dependencies: {
-		// 						'some-pkg': '*',
-		// 						'@types/some-pkg': '*',
-		// 					},
-		// 				}),
-		// 			});
+				// 		test('No warning if externalized', async () => {
+				// 			await using fixture = await createFixture({
+				// 				...fixtures.dependencyWithAtType,
+				// 				'package.json': JSON.stringify({
+				// 					dependencies: {
+				// 						'some-pkg': '*',
+				// 						'@types/some-pkg': '*',
+				// 					},
+				// 				}),
+				// 			});
 
-		// 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
-		// 			expect(spawned.stderr).toBe('');
+				// 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+				// 			expect(spawned.stderr).toBe('');
 
-		// 			const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-		// 			expect(entry).toContain('"some-pkg"');
-		// 		});
+				// 			const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+				// 			expect(entry).toContain('"some-pkg"');
+				// 		});
 
-		// 		test('No warning if private package', async () => {
-		// 			await using fixture = await createFixture({
-		// 				...fixtures.dependencyWithAtType,
-		// 				'package.json': JSON.stringify({
-		// 					private: true,
-		// 					dependencies: {
-		// 						'some-pkg': '*',
-		// 					},
-		// 					devDependencies: {
-		// 						'@types/some-pkg': '*',
-		// 					},
-		// 				}),
-		// 			});
+				// 		test('No warning if private package', async () => {
+				// 			await using fixture = await createFixture({
+				// 				...fixtures.dependencyWithAtType,
+				// 				'package.json': JSON.stringify({
+				// 					private: true,
+				// 					dependencies: {
+				// 						'some-pkg': '*',
+				// 					},
+				// 					devDependencies: {
+				// 						'@types/some-pkg': '*',
+				// 					},
+				// 				}),
+				// 			});
 
-		// 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
-		// 			expect(spawned.stderr).toBe('');
+				// 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+				// 			expect(spawned.stderr).toBe('');
 
-		// 			const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-		// 			expect(entry).toContain('"some-pkg"');
-		// 		});
+				// 			const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+				// 			expect(entry).toContain('"some-pkg"');
+				// 		});
 
-		// 		test('No warning if dependency is not used', async () => {
-		// 			await using fixture = await createFixture({
-		// 				...fixtures.dependencyWithAtType,
-		// 				'package.json': JSON.stringify({
-		// 					dependencies: {
-		// 						'some-pkg': '*',
-		// 					},
-		// 					devDependencies: {
-		// 						'@types/some-pkg': '*',
-		// 					},
-		// 				}),
-		// 				'dist/entry.d.ts': 'export type A = string;',
-		// 			});
+				// 		test('No warning if dependency is not used', async () => {
+				// 			await using fixture = await createFixture({
+				// 				...fixtures.dependencyWithAtType,
+				// 				'package.json': JSON.stringify({
+				// 					dependencies: {
+				// 						'some-pkg': '*',
+				// 					},
+				// 					devDependencies: {
+				// 						'@types/some-pkg': '*',
+				// 					},
+				// 				}),
+				// 				'dist/entry.d.ts': 'export type A = string;',
+				// 			});
 
-		// 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
-		// 			expect(spawned.stderr).toBe('');
+				// 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+				// 			expect(spawned.stderr).toBe('');
 
-		// 			const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-		// 			expect(entry).not.toContain('"some-pkg"');
-		// 		});
+				// 			const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+				// 			expect(entry).not.toContain('"some-pkg"');
+				// 		});
 			});
 		});
 
@@ -423,6 +421,8 @@ export default testSuite(({ describe }) => {
 
 			const chunks = await fs.readdir(fixture.getPath('dist/_dtsroll-chunks'));
 			expect(chunks.length).toBe(2);
+
+			console.log(chunks);
 
 			// Previously, it would create .d2.ts, .d3.ts, .d4.ts, when they would collide
 			expect(chunks.every(file => file.endsWith('.d.ts'))).toBeTruthy();
