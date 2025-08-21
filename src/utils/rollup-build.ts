@@ -1,7 +1,5 @@
 import { rolldown, type RolldownOptions } from 'rolldown';
 import { dts } from 'rolldown-plugin-dts';
-// import nodeResolve from '@rollup/plugin-node-resolve';
-import { dtsExtensions } from './dts-extensions.js';
 import { createExternalizePlugin } from './rollup-plugin-externalize.js';
 import { removeBundledModulesPlugin } from './rollup-plugin-remove-bundled-modules.js';
 
@@ -51,12 +49,7 @@ export const build = async (
 		plugins: [
 			externalizePlugin,
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
-			// nodeResolve({
-			// 	extensions: ['.ts', ...dtsExtensions],
-			// 	exportConditions: conditions,
-			// }),
 			dts({
-				emitDtsOnly: true,
 				dtsInput: true,
 				// resolve: true,
 				// respectExternal: true,

@@ -99,10 +99,10 @@ export default testSuite(({ describe }) => {
 				expect('exitCode' in spawned).toBe(false);
 
 				const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-				expect(indexContent).toMatch(/import \{ Foo \} from ".\/_dtsroll-chunks\/.+-dts.ts"/);
+				expect(indexContent).toMatch(/import \{ Foo \} from ".\/_dtsroll-chunks\/.+-dts.js"/);
 
 				const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-				expect(indexNestedContent).toMatch(/import \{ Foo \} from "..\/_dtsroll-chunks\/.+-dts.ts"/);
+				expect(indexNestedContent).toMatch(/import \{ Foo \} from "..\/_dtsroll-chunks\/.+-dts.js"/);
 
 				const mtsContent = await fixture.readFile('dist/dir/mts.d.mts', 'utf8');
 				expect(mtsContent).toContain('export { Baz }');
@@ -204,7 +204,7 @@ export default testSuite(({ describe }) => {
 
 					const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
 
-					const chunkNamePattern = /import \{ Foo \} from ".\/(_dtsroll-chunks\/.+-dts.ts)"/;
+					const chunkNamePattern = /import \{ Foo \} from ".\/(_dtsroll-chunks\/.+-dts.js)"/;
 					const chunkNameMatch = indexContent.match(chunkNamePattern);
 					expect(chunkNameMatch).toBeTruthy();
 
@@ -421,8 +421,6 @@ export default testSuite(({ describe }) => {
 
 			const chunks = await fs.readdir(fixture.getPath('dist/_dtsroll-chunks'));
 			expect(chunks.length).toBe(2);
-
-			console.log(chunks);
 
 			// Previously, it would create .d2.ts, .d3.ts, .d4.ts, when they would collide
 			expect(chunks.every(file => file.endsWith('.d.ts'))).toBeTruthy();
