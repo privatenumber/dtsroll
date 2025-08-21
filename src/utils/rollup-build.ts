@@ -46,6 +46,10 @@ export const build = async (
 			chunkFileNames: '_dtsroll-chunks/[hash]-[name].ts',
 		},
 
+		resolve: {
+			conditionNames: conditions,
+		},
+
 		plugins: [
 			externalizePlugin,
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
