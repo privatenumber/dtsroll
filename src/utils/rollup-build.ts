@@ -55,8 +55,7 @@ export const build = async (
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
 			dts({
 				dtsInput: true,
-				// resolve: true,
-				// respectExternal: true,
+				resolve: true,
 
 				/**
 				 * Setting a tsconfig or compilerOptions shouldn't be necessary since

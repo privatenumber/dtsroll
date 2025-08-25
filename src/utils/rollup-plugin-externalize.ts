@@ -11,48 +11,52 @@ export const createExternalizePlugin = (
 
 	const externalizePlugin = {
 		name: 'externalize',
-		async resolveId(id, importer, options) {
-			const packageName = !isPath(id) && getPackageName(id);
 
-			// Check id against package.json dependencies
-			if (packageName) {
-				const externalReason = configuredExternals.get(packageName);
-				if (externalReason) {
-					externalized.set(packageName, externalReason);
+		resolveId: {
+			order: 'pre',
+			async handler(id, importer, options) {
+				const packageName = !isPath(id) && getPackageName(id);
 
+				// Check id against package.json dependencies
+				if (packageName) {
+					const externalReason = configuredExternals.get(packageName);
+					if (externalReason) {
+						externalized.set(packageName, externalReason);
+
+						return {
+							id,
+							external: true,
+						};
+					}
+				}
+
+				const resolved = await this.resolve(id, importer, options);
+				if (resolved && !resolved.external) {
+					if (packageName) {
+						resolvedBareSpecifiers.set(resolved.id, id);
+					}
+
+					if (
+						// Self imports happen
+						importer && resolved.id !== importer
+
+						// Prevent loops
+						&& importPath.get(importer) !== resolved.id
+					) {
+						importPath.set(resolved.id, importer);
+					}
+
+					return resolved;
+				}
+
+				if (packageName) {
+					externalized.set(packageName, 'because unresolvable');
 					return {
 						id,
 						external: true,
 					};
 				}
-			}
-
-			const resolved = await this.resolve(id, importer, options);
-			if (resolved) {
-				if (packageName) {
-					resolvedBareSpecifiers.set(resolved.id, id);
-				}
-
-				if (
-					// Self imports happen
-					importer && resolved.id !== importer
-
-					// Prevent loops
-					&& importPath.get(importer) !== resolved.id
-				) {
-					importPath.set(resolved.id, importer);
-				}
-
-				return resolved;
-			}
-
-			if (packageName) {
-				externalized.set(packageName, 'because unresolvable');
-				return {
-					id,
-					external: true,
-				};
-			}
+			},
 		},
 	} satisfies Plugin;
 
