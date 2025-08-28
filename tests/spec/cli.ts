@@ -64,11 +64,11 @@ export default testSuite(({ describe }) => {
 			});
 
 			test('Unresolvable file should error', async () => {
-				const fixture = await createFixture(fixtures.brokenImport);
+				await using fixture = await createFixture(fixtures.brokenImport);
 
 				const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
 				expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
-				expect(spawned.stderr).toContain('Failed to build: Could not resolve "./missing-file" from "dist/entry.d.ts"');
+				expect(spawned.stderr).toContain('Cannot resolve import \'./missing-file\' from');
 			});
 		});
 
@@ -88,7 +88,7 @@ export default testSuite(({ describe }) => {
 			});
 
 			test('Multiple entry-point', async ({ onTestFail }) => {
-				const fixture = await createFixture(fixtures.multipleEntryPoints);
+				await using fixture = await createFixture(fixtures.multipleEntryPoints);
 
 				const spawned = await dtsroll(fixture.path, [
 					'./dist/index.d.ts',
@@ -99,13 +99,13 @@ export default testSuite(({ describe }) => {
 				expect('exitCode' in spawned).toBe(false);
 
 				const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-				expect(indexContent).toMatch(/import \{ F as Foo \} from '.\/_dtsroll-chunks\/.+-dts.js'/);
+				expect(indexContent).toMatch(/import \{ Foo \} from ".\/_dtsroll-chunks\/.+-dts.js"/);
 
 				const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-				expect(indexNestedContent).toMatch(/import \{ F as Foo \} from '..\/_dtsroll-chunks\/.+-dts.js'/);
+				expect(indexNestedContent).toMatch(/import \{ Foo \} from "..\/_dtsroll-chunks\/.+-dts.js"/);
 
 				const mtsContent = await fixture.readFile('dist/dir/mts.d.mts', 'utf8');
-				expect(mtsContent).toContain('type Baz = boolean');
+				expect(mtsContent).toContain('export { Baz }');
 
 				const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 				expect(bundledModuleExists).toBe(false);
@@ -204,14 +204,14 @@ export default testSuite(({ describe }) => {
 
 					const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
 
-					const chunkNamePattern = /import \{ F as Foo \} from '.\/(_dtsroll-chunks\/.+-dts.js)'/;
+					const chunkNamePattern = /import \{ Foo \} from ".\/(_dtsroll-chunks\/.+-dts.js)"/;
 					const chunkNameMatch = indexContent.match(chunkNamePattern);
 					expect(chunkNameMatch).toBeTruthy();
 
 					const chunkImportPath = chunkNameMatch![1];
 
 					const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-					expect(indexNestedContent).toContain(`import { F as Foo } from '../${chunkImportPath}'`);
+					expect(indexNestedContent).toContain(`import { Foo } from "../${chunkImportPath}"`);
 
 					const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 					expect(bundledModuleExists).toBe(false);
@@ -255,7 +255,7 @@ export default testSuite(({ describe }) => {
 				expect(spawned.stderr).toBe('');
 
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-				expect(entry).toContain('from \'node:path\'');
+				expect(entry).toContain('from "node:path"');
 			});
 
 			test('Unresolvable dependencies are externalized', async () => {
@@ -265,7 +265,7 @@ export default testSuite(({ describe }) => {
 				expect(spawned.stdout).toContain('─ some-dep externalized because unresolvable');
 
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-				expect(entry).toContain('from \'some-dep\'');
+				expect(entry).toContain('from "some-dep"');
 			});
 
 			test('Bundles dependency', async () => {
@@ -293,7 +293,7 @@ export default testSuite(({ describe }) => {
 				expect(spawned.stdout).toContain('─ some-pkg externalized by package.json dependencies');
 
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-				expect(entry).toContain('\'some-pkg\'');
+				expect(entry).toContain('"some-pkg"');
 			});
 
 			test('--external flag', async () => {
@@ -303,7 +303,7 @@ export default testSuite(({ describe }) => {
 				expect(spawned.stdout).toContain('─ some-pkg externalized by --external flag');
 
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-				expect(entry).toContain('\'some-pkg\'');
+				expect(entry).toContain('"some-pkg"');
 			});
 
 			test('--external flag ignored if theres a package.json', async () => {
@@ -337,7 +337,7 @@ export default testSuite(({ describe }) => {
 					expect(spawned.stdout).toContain('Warning: @types/some-pkg should not be in devDependencies if some-pkg is externalized');
 
 					const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-					expect(entry).toContain('\'some-pkg\'');
+					expect(entry).toContain('"some-pkg"');
 				});
 
 				test('No warning if externalized', async () => {
@@ -355,7 +355,7 @@ export default testSuite(({ describe }) => {
 					expect(spawned.stderr).toBe('');
 
 					const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-					expect(entry).toContain('\'some-pkg\'');
+					expect(entry).toContain('"some-pkg"');
 				});
 
 				test('No warning if private package', async () => {
@@ -376,7 +376,7 @@ export default testSuite(({ describe }) => {
 					expect(spawned.stderr).toBe('');
 
 					const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-					expect(entry).toContain('\'some-pkg\'');
+					expect(entry).toContain('"some-pkg"');
 				});
 
 				test('No warning if dependency is not used', async () => {
@@ -397,7 +397,7 @@ export default testSuite(({ describe }) => {
 					expect(spawned.stderr).toBe('');
 
 					const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
-					expect(entry).not.toContain('\'some-pkg\'');
+					expect(entry).not.toContain('"some-pkg"');
 				});
 			});
 		});

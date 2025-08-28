@@ -1,7 +1,5 @@
-import { rollup, type RollupOptions } from 'rollup';
-import { dts } from 'rollup-plugin-dts';
-import nodeResolve from '@rollup/plugin-node-resolve';
-import { dtsExtensions } from './dts-extensions.js';
+import { rolldown, type RolldownOptions } from 'rolldown';
+import { dts } from 'rolldown-plugin-dts';
 import { createExternalizePlugin } from './rollup-plugin-externalize.js';
 import { removeBundledModulesPlugin } from './rollup-plugin-remove-bundled-modules.js';
 
@@ -15,10 +13,13 @@ const createInputMap = (
 	input: string[],
 	outputDirectory: string,
 ) => Object.fromEntries(
-	input.map(inputFile => [
-		inputFile.slice(outputDirectory.length + 1),
-		inputFile,
-	]),
+	input.map((inputFile) => {
+		const name = inputFile.slice(outputDirectory.length + 1);
+		return [
+			name,
+			inputFile,
+		];
+	}),
 );
 
 export const build = async (
@@ -45,15 +46,16 @@ export const build = async (
 			chunkFileNames: '_dtsroll-chunks/[hash]-[name].ts',
 		},
 
+		resolve: {
+			conditionNames: conditions,
+		},
+
 		plugins: [
 			externalizePlugin,
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
-			nodeResolve({
-				extensions: ['.ts', ...dtsExtensions],
-				exportConditions: conditions,
-			}),
 			dts({
-				respectExternal: true,
+				dtsInput: true,
+				resolve: true,
 
 				/**
 				 * Setting a tsconfig or compilerOptions shouldn't be necessary since
@@ -64,9 +66,9 @@ export const build = async (
 				 */
 			}),
 		],
-	} satisfies RollupOptions;
+	} satisfies RolldownOptions;
 
-	const rollupBuild = await rollup(rollupConfig);
+	const rollupBuild = await rolldown(rollupConfig);
 	const built = await rollupBuild[mode](rollupConfig.output);
 
 	await rollupBuild.close();
