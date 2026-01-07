@@ -9,69 +9,69 @@ importers:
   .:
     dependencies:
       '@rollup/plugin-node-resolve':
-        specifier: ^16.0.1
+        specifier: ^16.0.3
         version: 16.0.3(rollup@4.55.1)
       byte-size:
         specifier: ^9.0.1
         version: 9.0.1
       cleye:
-        specifier: ^1.3.4
-        version: 1.3.4
+        specifier: ^2.2.1
+        version: 2.2.1
       rollup:
-        specifier: ^4.52.4
+        specifier: ^4.55.1
         version: 4.55.1
       rollup-plugin-dts:
-        specifier: 6.2.1
-        version: 6.2.1(rollup@4.55.1)(typescript@5.9.3)
+        specifier: 6.3.0
+        version: 6.3.0(rollup@4.55.1)(typescript@5.9.3)
     devDependencies:
       '@types/byte-size':
         specifier: ^8.1.2
         version: 8.1.2
       '@types/node':
-        specifier: ^24.6.2
-        version: 24.10.4
+        specifier: ^25.0.3
+        version: 25.0.3
       clean-pkg-json:
         specifier: ^1.3.0
         version: 1.3.0
       execa:
-        specifier: 9.6.0
-        version: 9.6.0
+        specifier: 9.6.1
+        version: 9.6.1
       fs-fixture:
-        specifier: ^2.9.0
+        specifier: ^2.11.0
         version: 2.11.0
       kolorist:
         specifier: ^1.8.0
         version: 1.8.0
       lintroll:
-        specifier: ^1.20.1
+        specifier: ^1.27.1
         version: 1.27.1(@types/estree@1.0.8)(@typescript-eslint/utils@8.52.0(eslint@9.39.2)(typescript@5.9.3))(jsonc-eslint-parser@2.4.2)(typescript@5.9.3)
       manten:
-        specifier: ^1.5.0
+        specifier: ^1.10.0
         version: 1.10.0
       nano-spawn:
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^2.0.0
+        version: 2.0.0
       outdent:
         specifier: ^0.8.0
         version: 0.8.0
       pkgroll:
-        specifier: ^2.17.0
+        specifier: ^2.21.5
         version: 2.21.5(typescript@5.9.3)
       tsx:
-        specifier: ^4.20.6
+        specifier: ^4.21.0
         version: 4.21.0
       type-fest:
-        specifier: ^4.41.0
-        version: 4.41.0
+        specifier: ^5.3.1
+        version: 5.3.1
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
       vite:
-        specifier: ^7.1.9
-        version: 7.3.1(@types/node@24.10.4)(tsx@4.21.0)(yaml@2.8.2)
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@25.0.3)(tsx@4.21.0)(yaml@2.8.2)
       vite-plugin-dts:
         specifier: ^4.5.4
-        version: 4.5.4(@types/node@24.10.4)(rollup@4.55.1)(typescript@5.9.3)(vite@7.3.1(@types/node@24.10.4)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.5.4(@types/node@25.0.3)(rollup@4.55.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0)(yaml@2.8.2))
 
 packages:
 
@@ -877,8 +877,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@24.10.4':
-    resolution: {integrity: sha512-vnDVpYPMzs4wunl27jHrfmwojOGKya0xyM3sH+UE5iv5uPS6vX7UIoh6m+vQc5LGBq52HBKPIn/zcSZVzeDEZg==}
+  '@types/node@25.0.3':
+    resolution: {integrity: sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA==}
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
@@ -1262,9 +1262,6 @@ packages:
   clean-regexp@1.0.0:
     resolution: {integrity: sha512-GfisEZEJvzKrmGWkvfhgzcz/BllN1USeqD2V6tg14OAOgaCD2Z/PUEuxnAZ/nPvmaHRG7a8y77p1T/IRQ4D1Hw==}
     engines: {node: '>=4'}
-
-  cleye@1.3.4:
-    resolution: {integrity: sha512-Rd6M8ecBDtdYdPR22h6gG37lPqqJ3hSOaplaGwuGYey9xKmEElOvTgupqfyLSlISshroRpVhYjDtW3vwNUNBaQ==}
 
   cleye@2.2.1:
     resolution: {integrity: sha512-eZzJGlG3N6+IsKV+297HIRS2fyRsLMOrx62hGUmmcyOtP/I+L7JVeSKZH49WZUdVB8NoaZOUvq01363I/PHJiA==}
@@ -1667,8 +1664,8 @@ packages:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
 
-  execa@9.6.0:
-    resolution: {integrity: sha512-jpWzZ1ZhwUmeWRhS7Qv3mhpOhLfwI+uAX4e5fOcXqwMR7EcJ0pj2kV1CVzHVMX/LphnKWD3LObjZCoJ71lKpHw==}
+  execa@9.6.1:
+    resolution: {integrity: sha512-9Be3ZoN4LmYR90tUoVu2te2BsbzHfhJyfEiAVfz7N5/zv+jduIfLrV2xdQXOHbaD6KgpGdO9PRPM1Y4Q9QkPkA==}
     engines: {node: ^18.19.0 || >=20.5.0}
 
   expect@30.2.0:
@@ -2362,10 +2359,6 @@ packages:
   muggle-string@0.4.1:
     resolution: {integrity: sha512-VNTrAak/KhO2i8dqqnqnAHOa3cYBwXEZe9h+D5h/1ZqFSTEFHdM65lR7RoIqq3tBBYavsOXV84NoHXZ0AkPyqQ==}
 
-  nano-spawn@1.0.3:
-    resolution: {integrity: sha512-jtpsQDetTnvS2Ts1fiRdci5rx0VYws5jGyC+4IYOTnIQ/wwdf6JdomlHBwqC3bJYOvaKu0C2GSZ1A60anrYpaA==}
-    engines: {node: '>=20.17'}
-
   nano-spawn@2.0.0:
     resolution: {integrity: sha512-tacvGzUY5o2D8CBh2rrwxyNojUsZNU2zjNTzKQrkgGJQTbGAfArVWXSKMBokBeeg6C7OLRGUEyoFlYbfeWQIqw==}
     engines: {node: '>=20.17'}
@@ -2604,8 +2597,8 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rollup-plugin-dts@6.2.1:
-    resolution: {integrity: sha512-sR3CxYUl7i2CHa0O7bA45mCrgADyAQ0tVtGSqi3yvH28M+eg1+g5d7kQ9hLvEz5dorK3XVsH5L2jwHLQf72DzA==}
+  rollup-plugin-dts@6.3.0:
+    resolution: {integrity: sha512-d0UrqxYd8KyZ6i3M2Nx7WOMy708qsV/7fTHMHxCMCBOAe3V/U7OMPu5GkX8hC+cmkHhzGnfeYongl1IgiooddA==}
     engines: {node: '>=16'}
     peerDependencies:
       rollup: ^3.29.4 || ^4
@@ -2802,12 +2795,13 @@ packages:
     resolution: {integrity: sha512-MeQTA1r0litLUf0Rp/iisCaL8761lKAZHaimlbGK4j0HysC4PLfqygQj9srcs0m2RdtDYnF8UuYyKpbjHYp7Jw==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
+  tagged-tag@1.0.0:
+    resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
+    engines: {node: '>=20'}
+
   tapable@2.3.0:
     resolution: {integrity: sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg==}
     engines: {node: '>=6'}
-
-  terminal-columns@1.4.1:
-    resolution: {integrity: sha512-IKVL/itiMy947XWVv4IHV7a0KQXvKjj4ptbi7Ew9MPMcOLzkiQeyx3Gyvh62hKrfJ0RZc4M1nbhzjNM39Kyujw==}
 
   terminal-columns@2.0.0:
     resolution: {integrity: sha512-6IByuUjyNZJXUtwDNm+OIe62zgwwaRbH+WMNTcx05O2G5V9WhvluAAHJY8OvUdwmzMPpqAD/7EUpGdI6ae1aiQ==}
@@ -2843,9 +2837,9 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
-  type-fest@4.41.0:
-    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
-    engines: {node: '>=16'}
+  type-fest@5.3.1:
+    resolution: {integrity: sha512-VCn+LMHbd4t6sF3wfU/+HKT63C9OoyrSIf4b+vtWHpt2U7/4InZG467YDNMFMR70DdHjAdpPWmw2lzRdg0Xqqg==}
+    engines: {node: '>=20'}
 
   type-flag@3.0.0:
     resolution: {integrity: sha512-3YaYwMseXCAhBB14RXW5cRQfJQlEknS6i4C8fCfeUdS3ihG9EdccdR9kt3vP73ZdeTGmPb4bZtkDn5XMIn1DLA==}
@@ -3438,7 +3432,7 @@ snapshots:
 
   '@jest/pattern@30.0.1':
     dependencies:
-      '@types/node': 24.10.4
+      '@types/node': 25.0.3
       jest-regex-util: 30.0.1
 
   '@jest/schemas@30.0.5':
@@ -3451,7 +3445,7 @@ snapshots:
       '@jest/schemas': 30.0.5
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 24.10.4
+      '@types/node': 25.0.3
       '@types/yargs': 17.0.35
       chalk: 4.1.2
 
@@ -3474,23 +3468,23 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@microsoft/api-extractor-model@7.32.2(@types/node@24.10.4)':
+  '@microsoft/api-extractor-model@7.32.2(@types/node@25.0.3)':
     dependencies:
       '@microsoft/tsdoc': 0.16.0
       '@microsoft/tsdoc-config': 0.18.0
-      '@rushstack/node-core-library': 5.19.1(@types/node@24.10.4)
+      '@rushstack/node-core-library': 5.19.1(@types/node@25.0.3)
     transitivePeerDependencies:
       - '@types/node'
 
-  '@microsoft/api-extractor@7.55.2(@types/node@24.10.4)':
+  '@microsoft/api-extractor@7.55.2(@types/node@25.0.3)':
     dependencies:
-      '@microsoft/api-extractor-model': 7.32.2(@types/node@24.10.4)
+      '@microsoft/api-extractor-model': 7.32.2(@types/node@25.0.3)
       '@microsoft/tsdoc': 0.16.0
       '@microsoft/tsdoc-config': 0.18.0
-      '@rushstack/node-core-library': 5.19.1(@types/node@24.10.4)
+      '@rushstack/node-core-library': 5.19.1(@types/node@25.0.3)
       '@rushstack/rig-package': 0.6.0
-      '@rushstack/terminal': 0.19.5(@types/node@24.10.4)
-      '@rushstack/ts-command-line': 5.1.5(@types/node@24.10.4)
+      '@rushstack/terminal': 0.19.5(@types/node@25.0.3)
+      '@rushstack/ts-command-line': 5.1.5(@types/node@25.0.3)
       diff: 8.0.2
       lodash: 4.17.21
       minimatch: 10.0.3
@@ -3664,7 +3658,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.55.1':
     optional: true
 
-  '@rushstack/node-core-library@5.19.1(@types/node@24.10.4)':
+  '@rushstack/node-core-library@5.19.1(@types/node@25.0.3)':
     dependencies:
       ajv: 8.13.0
       ajv-draft-04: 1.0.0(ajv@8.13.0)
@@ -3675,28 +3669,28 @@ snapshots:
       resolve: 1.22.11
       semver: 7.5.4
     optionalDependencies:
-      '@types/node': 24.10.4
+      '@types/node': 25.0.3
 
-  '@rushstack/problem-matcher@0.1.1(@types/node@24.10.4)':
+  '@rushstack/problem-matcher@0.1.1(@types/node@25.0.3)':
     optionalDependencies:
-      '@types/node': 24.10.4
+      '@types/node': 25.0.3
 
   '@rushstack/rig-package@0.6.0':
     dependencies:
       resolve: 1.22.11
       strip-json-comments: 3.1.1
 
-  '@rushstack/terminal@0.19.5(@types/node@24.10.4)':
+  '@rushstack/terminal@0.19.5(@types/node@25.0.3)':
     dependencies:
-      '@rushstack/node-core-library': 5.19.1(@types/node@24.10.4)
-      '@rushstack/problem-matcher': 0.1.1(@types/node@24.10.4)
+      '@rushstack/node-core-library': 5.19.1(@types/node@25.0.3)
+      '@rushstack/problem-matcher': 0.1.1(@types/node@25.0.3)
       supports-color: 8.1.1
     optionalDependencies:
-      '@types/node': 24.10.4
+      '@types/node': 25.0.3
 
-  '@rushstack/ts-command-line@5.1.5(@types/node@24.10.4)':
+  '@rushstack/ts-command-line@5.1.5(@types/node@25.0.3)':
     dependencies:
-      '@rushstack/terminal': 0.19.5(@types/node@24.10.4)
+      '@rushstack/terminal': 0.19.5(@types/node@25.0.3)
       '@types/argparse': 1.0.38
       argparse: 1.0.10
       string-argv: 0.3.2
@@ -3752,7 +3746,7 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@24.10.4':
+  '@types/node@25.0.3':
     dependencies:
       undici-types: 7.16.0
 
@@ -4153,11 +4147,6 @@ snapshots:
   clean-regexp@1.0.0:
     dependencies:
       escape-string-regexp: 1.0.5
-
-  cleye@1.3.4:
-    dependencies:
-      terminal-columns: 1.4.1
-      type-flag: 3.0.0
 
   cleye@2.2.1:
     dependencies:
@@ -4748,7 +4737,7 @@ snapshots:
 
   esutils@2.0.3: {}
 
-  execa@9.6.0:
+  execa@9.6.1:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
       cross-spawn: 7.0.6
@@ -5179,7 +5168,7 @@ snapshots:
   jest-mock@30.2.0:
     dependencies:
       '@jest/types': 30.2.0
-      '@types/node': 24.10.4
+      '@types/node': 25.0.3
       jest-util: 30.2.0
 
   jest-regex-util@30.0.1: {}
@@ -5187,7 +5176,7 @@ snapshots:
   jest-util@30.2.0:
     dependencies:
       '@jest/types': 30.2.0
-      '@types/node': 24.10.4
+      '@types/node': 25.0.3
       chalk: 4.1.2
       ci-info: 4.3.1
       graceful-fs: 4.2.11
@@ -5678,8 +5667,6 @@ snapshots:
 
   muggle-string@0.4.1: {}
 
-  nano-spawn@1.0.3: {}
-
   nano-spawn@2.0.0: {}
 
   nanoid@3.3.11: {}
@@ -5923,7 +5910,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rollup-plugin-dts@6.2.1(rollup@4.55.1)(typescript@5.9.3):
+  rollup-plugin-dts@6.3.0(rollup@4.55.1)(typescript@5.9.3):
     dependencies:
       magic-string: 0.30.21
       rollup: 4.55.1
@@ -6184,9 +6171,9 @@ snapshots:
     dependencies:
       '@pkgr/core': 0.2.9
 
-  tapable@2.3.0: {}
+  tagged-tag@1.0.0: {}
 
-  terminal-columns@1.4.1: {}
+  tapable@2.3.0: {}
 
   terminal-columns@2.0.0: {}
 
@@ -6222,7 +6209,9 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  type-fest@4.41.0: {}
+  type-fest@5.3.1:
+    dependencies:
+      tagged-tag: 1.0.0
 
   type-flag@3.0.0: {}
 
@@ -6342,9 +6331,9 @@ snapshots:
 
   validate-npm-package-name@7.0.2: {}
 
-  vite-plugin-dts@4.5.4(@types/node@24.10.4)(rollup@4.55.1)(typescript@5.9.3)(vite@7.3.1(@types/node@24.10.4)(tsx@4.21.0)(yaml@2.8.2)):
+  vite-plugin-dts@4.5.4(@types/node@25.0.3)(rollup@4.55.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
-      '@microsoft/api-extractor': 7.55.2(@types/node@24.10.4)
+      '@microsoft/api-extractor': 7.55.2(@types/node@25.0.3)
       '@rollup/pluginutils': 5.3.0(rollup@4.55.1)
       '@volar/typescript': 2.4.27
       '@vue/language-core': 2.2.0(typescript@5.9.3)
@@ -6355,13 +6344,13 @@ snapshots:
       magic-string: 0.30.21
       typescript: 5.9.3
     optionalDependencies:
-      vite: 7.3.1(@types/node@24.10.4)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 7.3.1(@types/node@25.0.3)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@types/node'
       - rollup
       - supports-color
 
-  vite@7.3.1(@types/node@24.10.4)(tsx@4.21.0)(yaml@2.8.2):
+  vite@7.3.1(@types/node@25.0.3)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.27.2
       fdir: 6.5.0(picomatch@4.0.3)
@@ -6370,7 +6359,7 @@ snapshots:
       rollup: 4.55.1
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 24.10.4
+      '@types/node': 25.0.3
       fsevents: 2.3.3
       tsx: 4.21.0
       yaml: 2.8.2
