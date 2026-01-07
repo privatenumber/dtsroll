@@ -49,6 +49,8 @@
 		"@rollup/plugin-node-resolve": "^16.0.3",
 		"byte-size": "^9.0.1",
 		"cleye": "^2.2.1",
+		"empathic": "^2.0.0",
+		"resolve-pkg-maps": "^1.0.0",
 		"rollup": "^4.55.1",
 		"rollup-plugin-dts": "6.3.0"
 	},
