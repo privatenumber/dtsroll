@@ -17,6 +17,12 @@ importers:
       cleye:
         specifier: ^2.2.1
         version: 2.2.1
+      empathic:
+        specifier: ^2.0.0
+        version: 2.0.0
+      resolve-pkg-maps:
+        specifier: ^1.0.0
+        version: 1.0.0
       rollup:
         specifier: ^4.55.1
         version: 4.55.1
@@ -1392,6 +1398,10 @@ packages:
 
   emoji-regex@10.6.0:
     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
+
+  empathic@2.0.0:
+    resolution: {integrity: sha512-i6UzDscO/XfAcNYD75CfICkmfLedpyPDdozrLMmQc5ORaQcdMoc21OnlEylMIqI7U8eniKrPMxxtj8k0vhmJhA==}
+    engines: {node: '>=14'}
 
   enhanced-resolve@5.18.4:
     resolution: {integrity: sha512-LgQMM4WXU3QI+SYgEc2liRgznaD5ojbmY3sb8LxyguVkIg5FxdpTkvk72te2R38/TGKxH634oLxXRGY6d7AP+Q==}
@@ -4264,6 +4274,8 @@ snapshots:
   electron-to-chromium@1.5.267: {}
 
   emoji-regex@10.6.0: {}
+
+  empathic@2.0.0: {}
 
   enhanced-resolve@5.18.4:
     dependencies:

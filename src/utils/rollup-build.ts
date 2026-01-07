@@ -4,6 +4,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import { dtsExtensions } from './dts-extensions.js';
 import { createExternalizePlugin } from './rollup-plugin-externalize.js';
 import { removeBundledModulesPlugin } from './rollup-plugin-remove-bundled-modules.js';
+import { resolveSubpathImportsPlugin } from './rollup-plugin-resolve-subpath-imports.js';
 
 /**
  * Input array is converted to an object because rollup-plugin-dts has a bug
@@ -48,6 +49,7 @@ export const build = async (
 		plugins: [
 			externalizePlugin,
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
+			resolveSubpathImportsPlugin(),
 			nodeResolve({
 				extensions: ['.ts', ...dtsExtensions],
 				exportConditions: conditions,
