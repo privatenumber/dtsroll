@@ -1,7 +1,6 @@
 <p align="center">
-    <img width="150" src="./.github/logo.webp">
+    <img width="200" src="./.github/logo.webp">
 </p>
-
 <h2 align="center">
 dtsroll
 </h2>
