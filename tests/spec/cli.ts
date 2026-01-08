@@ -76,7 +76,18 @@ export default testSuite(({ describe }) => {
 
 				const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
 				expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
-				expect(spawned.stderr).toContain('Failed to build: Could not resolve "./missing-file" from "dist/entry.d.ts"');
+				expect(spawned.stderr).toContain('Failed to build');
+				expect(spawned.stderr).toContain('Could not resolve "./missing-file" from "dist/entry.d.ts"');
+			});
+
+			test('Build error shows file path', async () => {
+				await using fixture = await createFixture(fixtures.invalidSyntax);
+
+				const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
+				expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
+				expect(spawned.stderr).toContain('Failed to build');
+				expect(spawned.stderr).toContain('File:');
+				expect(spawned.stderr).toContain('invalid.d.ts');
 			});
 		});
 

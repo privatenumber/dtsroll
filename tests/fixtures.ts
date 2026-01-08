@@ -118,6 +118,19 @@ export const dependency = {
 	},
 };
 
+export const invalidSyntax = {
+	dist: {
+		'entry.d.ts': outdent`
+		import { Foo } from './invalid';
+		export declare const value: Foo;
+		`,
+		'invalid.d.ts': outdent`
+		'use strict';
+		declare var foo = require('foo');
+		`,
+	},
+};
+
 export const dependencyWithAtType = {
 	node_modules: {
 		'@types/some-pkg': {

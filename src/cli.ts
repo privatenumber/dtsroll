@@ -54,7 +54,12 @@ dtsroll({
 		logOutput(output);
 	},
 	(error) => {
-		console.error('\nFailed to build:', error.message);
+		let errorMessage = '\nFailed to build';
+		if (error.id) {
+			errorMessage += `\n  File: ${error.id}`;
+		}
+		errorMessage += `\n\n${error.message}`;
+		console.error(errorMessage);
 		process.exitCode = 1;
 	},
 );
