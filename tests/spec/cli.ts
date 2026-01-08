@@ -25,6 +25,14 @@ const dtsroll = (
 export default testSuite(({ describe }) => {
 	describe('cli', ({ describe, test }) => {
 		describe('errors', ({ test }) => {
+			test('Unknown flag errors', async () => {
+				await using fixture = await createFixture({});
+
+				const spawned = await dtsroll(fixture.path, ['--unknown-flag']);
+				expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
+				expect(spawned.stderr).toContain('Unknown flag: --unknown-flag');
+			});
+
 			test('No inputs', async () => {
 				await using fixture = await createFixture({});
 

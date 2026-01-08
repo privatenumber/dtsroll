@@ -10,6 +10,7 @@ const argv = cli({
 	help: {
 		description,
 	},
+	strictFlags: true,
 	parameters: ['[input files...]'],
 	flags: {
 		conditions: {
@@ -36,8 +37,7 @@ const argv = cli({
 
 const { flags } = argv;
 
-const dryMode = flags.dryRun;
-if (dryMode) {
+if (flags.dryRun) {
 	console.log(bgYellow(black(' Dry run - No files will be written ')));
 }
 
