@@ -58,6 +58,10 @@ dtsroll({
 		if (error.id) {
 			errorMessage += `\n  File: ${error.id}`;
 		}
+		if (error.importChain && error.importChain.length > 1) {
+			errorMessage += '\n\n  Import chain:\n    ';
+			errorMessage += error.importChain.join('\n    → ');
+		}
 		errorMessage += `\n\n${error.message}`;
 		console.error(errorMessage);
 		process.exitCode = 1;

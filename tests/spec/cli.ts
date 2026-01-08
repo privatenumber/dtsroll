@@ -80,14 +80,27 @@ export default testSuite(({ describe }) => {
 				expect(spawned.stderr).toContain('Could not resolve "./missing-file" from "dist/entry.d.ts"');
 			});
 
-			test('Build error shows file path', async () => {
+			test('Build error shows file path and import chain', async () => {
 				await using fixture = await createFixture(fixtures.invalidSyntax);
 
 				const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
 				expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
-				expect(spawned.stderr).toContain('Failed to build');
-				expect(spawned.stderr).toContain('File:');
-				expect(spawned.stderr).toContain('invalid.d.ts');
+
+				const entryPath = path.join(fixture.path, 'dist/entry.d.ts');
+				const invalidPath = path.join(fixture.path, 'dist/invalid.d.ts');
+				expect(spawned.stderr).toBe(`
+Failed to build
+  File: ${invalidPath}
+
+  Import chain:
+    ${entryPath}
+    → ${invalidPath}
+
+Syntax not yet supported
+
+> 1 | 'use strict';
+    | ^^^^^^^^^^^^^
+  2 | declare var foo = require('foo');`);
 			});
 		});
 
