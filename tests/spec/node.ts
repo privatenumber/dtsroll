@@ -600,6 +600,43 @@ export default testSuite(({ describe }) => {
 				const outputMap = JSON.parse(mapContent);
 				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
 			});
+
+			test('preserves sources for empty entry point files', async () => {
+				// Rollup generates empty sourcemaps (sources: []) for empty chunks
+				// This test ensures we preserve the original source references
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': 'export {};\n',
+						'index.d.ts.map': JSON.stringify({
+							version: 3,
+							file: 'index.d.ts',
+							sources: ['../src/index.ts'],
+							sourcesContent: [''],
+							mappings: '',
+							names: [],
+						}),
+					},
+					src: {
+						'index.ts': '',
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const outputMap = JSON.parse(mapContent);
+
+				// Without the fix, sources would be [] (empty)
+				// With the fix, sources should point to the original .ts file
+				expect(outputMap.sources.length).toBeGreaterThan(0);
+				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+			});
 		});
 	});
 });
