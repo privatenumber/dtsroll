@@ -47,7 +47,11 @@ export const removeBundledModulesPlugin = (
 		},
 		writeBundle: async () => {
 			await Promise.all(
-				deleteFiles.map(moduleId => fs.rm(moduleId)),
+				deleteFiles.flatMap(moduleId => [
+					fs.rm(moduleId),
+					// Also delete orphaned sourcemap files
+					fs.rm(`${moduleId}.map`, { force: true }),
+				]),
 			);
 		},
 	};

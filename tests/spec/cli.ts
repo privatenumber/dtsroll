@@ -298,6 +298,40 @@ Syntax not yet supported
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
 				expect(entry).toContain('//# sourceMappingURL=entry.d.ts.map');
 			});
+
+			test('deletes orphaned sourcemap files for bundled modules', async ({ onTestFail }) => {
+				await using fixture = await createFixture({
+					'package.json': JSON.stringify({
+						exports: './dist/entry.d.ts',
+					}),
+					dist: {
+						'entry.d.ts': 'import { Foo } from \'./types.js\';\nexport declare const value: Foo;\n',
+						'types.d.ts': 'export type Foo = string;\n',
+						'types.d.ts.map': JSON.stringify({
+							version: 3,
+							file: 'types.d.ts',
+							sources: ['../src/types.ts'],
+							mappings: 'AAAA',
+						}),
+					},
+				});
+
+				// Verify sourcemap exists before bundling
+				const mapExistsBefore = await fixture.exists('dist/types.d.ts.map');
+				expect(mapExistsBefore).toBe(true);
+
+				const spawned = await dtsroll(fixture.path, ['--sourcemap']);
+				onTestFail(() => console.log(spawned));
+				expect('exitCode' in spawned).toBe(false);
+
+				// types.d.ts should be bundled and deleted
+				const typesExists = await fixture.exists('dist/types.d.ts');
+				expect(typesExists).toBe(false);
+
+				// Orphaned sourcemap should also be deleted
+				const mapExistsAfter = await fixture.exists('dist/types.d.ts.map');
+				expect(mapExistsAfter).toBe(false);
+			});
 		});
 
 		describe('Dependencies', ({ describe, test }) => {
