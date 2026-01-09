@@ -17,6 +17,9 @@ importers:
       cleye:
         specifier: ^2.2.1
         version: 2.2.1
+      convert-source-map:
+        specifier: ^2.0.0
+        version: 2.0.0
       empathic:
         specifier: ^2.0.0
         version: 2.0.0
@@ -36,6 +39,9 @@ importers:
       '@types/byte-size':
         specifier: ^8.1.2
         version: 8.1.2
+      '@types/convert-source-map':
+        specifier: ^2.0.3
+        version: 2.0.3
       '@types/node':
         specifier: ^25.0.3
         version: 25.0.3
@@ -861,6 +867,9 @@ packages:
 
   '@types/byte-size@8.1.2':
     resolution: {integrity: sha512-jGyVzYu6avI8yuqQCNTZd65tzI8HZrLjKX9sdMqZrGWVlNChu0rf6p368oVEDCYJe5BMx2Ov04tD1wqtgTwGSA==}
+
+  '@types/convert-source-map@2.0.3':
+    resolution: {integrity: sha512-ag0BfJLZf6CQz8VIuRIEYQ5Ggwk/82uvTQf27RcpyDNbY0Vw49LIPqAxk5tqYfrCs9xDaIMvl4aj7ZopnYL8bA==}
 
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
@@ -3734,6 +3743,8 @@ snapshots:
   '@types/argparse@1.0.38': {}
 
   '@types/byte-size@8.1.2': {}
+
+  '@types/convert-source-map@2.0.3': {}
 
   '@types/debug@4.1.12':
     dependencies:
