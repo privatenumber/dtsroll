@@ -3,6 +3,7 @@ import path from 'node:path';
 import type { Plugin } from 'rollup';
 import convert from 'convert-source-map';
 import { dtsExtensions } from '../../utils/dts-extensions.js';
+import { normalizePath } from '../../utils/path-utils.js';
 
 const tryReadFile = async (filePath: string) => {
 	try {
@@ -186,10 +187,9 @@ export const loadInputSourcemapsPlugin = (): Plugin => {
 				const mapPath = path.join(outputDir, mapFileName);
 
 				// Make sources relative to the output file for portability
-				// Use forward slashes for cross-platform sourcemap compatibility
 				const outputFileDir = path.dirname(path.join(outputDir, fileName));
 				const relativeSources = inputSourcemap.sources.map(
-					source => path.relative(outputFileDir, source).replaceAll('\\', '/'),
+					source => normalizePath(path.relative(outputFileDir, source)),
 				);
 
 				const fixedMap = {
