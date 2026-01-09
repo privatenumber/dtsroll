@@ -1,9 +1,11 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { expect, testSuite } from 'manten';
 import { createFixture } from 'fs-fixture';
 import { getCommonDirectory } from '../../src/utils/get-common-directory.js';
 import { propertyNeedsQuotes } from '../../src/utils/property-needs-quotes.js';
 import { getPackageJson } from '../../src/utils/package-json.js';
+import { getAllFiles } from '../../src/utils/get-all-files.js';
 
 export default testSuite(({ describe }) => {
 	describe('utils', ({ describe }) => {
@@ -52,6 +54,43 @@ export default testSuite(({ describe }) => {
 					path.join('a', 'b', 'c', 'd', 'e', 'h', 'i.ts'),
 				]);
 				expect(result).toBe(path.join('a', 'b', 'c', 'd', 'e'));
+			});
+		});
+
+		describe('getAllFiles', ({ test }) => {
+			test('returns all files in directory tree', async () => {
+				await using fixture = await createFixture({
+					'a.txt': 'file a',
+					'subdir/b.txt': 'file b',
+					'subdir/nested/c.txt': 'file c',
+				});
+
+				const files = await getAllFiles(fixture.path);
+
+				expect(files).toContain('./a.txt');
+				expect(files).toContain('./subdir/b.txt');
+				expect(files).toContain('./subdir/nested/c.txt');
+			});
+
+			test('skips symlinks (does not follow them)', async () => {
+				await using fixture = await createFixture({
+					'a.txt': 'file a',
+					'realdir/b.txt': 'file b',
+				});
+
+				// Create symlink to directory
+				await fs.symlink(
+					path.join(fixture.path, 'realdir'),
+					path.join(fixture.path, 'linkdir'),
+				);
+
+				const files = await getAllFiles(fixture.path);
+
+				// Should find real files
+				expect(files).toContain('./a.txt');
+				expect(files).toContain('./realdir/b.txt');
+				// Should NOT follow symlink (symlinks are skipped)
+				expect(files).not.toContain('./linkdir/b.txt');
 			});
 		});
 
