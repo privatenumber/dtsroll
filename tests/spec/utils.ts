@@ -9,49 +9,49 @@ export default testSuite(({ describe }) => {
 	describe('utils', ({ describe }) => {
 		describe('getCommonDirectory', ({ test }) => {
 			test('single file returns its directory', () => {
-				const result = getCommonDirectory(['/foo/bar/file.ts']);
-				expect(result).toBe(`${path.sep}foo${path.sep}bar`);
+				const result = getCommonDirectory([path.join('foo', 'bar', 'file.ts')]);
+				expect(result).toBe(path.join('foo', 'bar'));
 			});
 
 			test('files in same directory', () => {
 				const result = getCommonDirectory([
-					'/foo/bar/a.ts',
-					'/foo/bar/b.ts',
+					path.join('foo', 'bar', 'a.ts'),
+					path.join('foo', 'bar', 'b.ts'),
 				]);
-				expect(result).toBe(`${path.sep}foo${path.sep}bar`);
+				expect(result).toBe(path.join('foo', 'bar'));
 			});
 
 			test('files in nested directories', () => {
 				const result = getCommonDirectory([
-					'/foo/bar/a.ts',
-					'/foo/bar/baz/b.ts',
+					path.join('foo', 'bar', 'a.ts'),
+					path.join('foo', 'bar', 'baz', 'b.ts'),
 				]);
-				expect(result).toBe(`${path.sep}foo${path.sep}bar`);
+				expect(result).toBe(path.join('foo', 'bar'));
 			});
 
 			test('files with different roots', () => {
 				const result = getCommonDirectory([
-					'/foo/bar/a.ts',
-					'/foo/baz/b.ts',
+					path.join('foo', 'bar', 'a.ts'),
+					path.join('foo', 'baz', 'b.ts'),
 				]);
-				expect(result).toBe(`${path.sep}foo`);
+				expect(result).toBe('foo');
 			});
 
 			test('files with no common directory', () => {
 				const result = getCommonDirectory([
-					'/foo/a.ts',
-					'/bar/b.ts',
+					path.join('foo', 'a.ts'),
+					path.join('bar', 'b.ts'),
 				]);
 				expect(result).toBe('');
 			});
 
 			test('deeply nested common path', () => {
 				const result = getCommonDirectory([
-					'/a/b/c/d/e/f.ts',
-					'/a/b/c/d/e/g.ts',
-					'/a/b/c/d/e/h/i.ts',
+					path.join('a', 'b', 'c', 'd', 'e', 'f.ts'),
+					path.join('a', 'b', 'c', 'd', 'e', 'g.ts'),
+					path.join('a', 'b', 'c', 'd', 'e', 'h', 'i.ts'),
 				]);
-				expect(result).toBe(`${path.sep}a${path.sep}b${path.sep}c${path.sep}d${path.sep}e`);
+				expect(result).toBe(path.join('a', 'b', 'c', 'd', 'e'));
 			});
 		});
 

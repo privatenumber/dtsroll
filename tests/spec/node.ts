@@ -169,6 +169,83 @@ export default testSuite(({ describe }) => {
 
 				expect('error' in generated).toBe(false);
 			});
+
+			test('should use types condition over default', async () => {
+				await using fixture = await createFixture({
+					'package.json': JSON.stringify({
+						imports: {
+							'#types': {
+								types: './dist/types.d.ts',
+								default: './dist/types.js',
+							},
+						},
+					}),
+					dist: {
+						'index.d.ts': outdent`
+						import { MyType } from '#types';
+						export declare const a: MyType;
+						`,
+						'types.d.ts': 'export type MyType = string;',
+						'types.js': 'export const MyType = "not-a-type";',
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+				});
+
+				expect('error' in generated).toBe(false);
+				const content = await fixture.readFile('dist/index.d.ts', 'utf8');
+				expect(content).toContain('type MyType = string');
+			});
+
+			test('should externalize unresolvable subpath imports', async () => {
+				await using fixture = await createFixture({
+					'package.json': JSON.stringify({
+						imports: {
+							'#utils': './dist/utils.js',
+						},
+					}),
+					dist: {
+						'index.d.ts': outdent`
+						import { MyType } from '#nonexistent';
+						export declare const a: MyType;
+						`,
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+				});
+
+				// Unresolvable subpath imports are left as external (warning is logged)
+				expect('error' in generated).toBe(false);
+				const content = await fixture.readFile('dist/index.d.ts', 'utf8');
+				expect(content).toContain("from '#nonexistent'");
+			});
+
+			test('should work without package.json', async () => {
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+						import { MyType } from './types.js';
+						export declare const a: MyType;
+						`,
+						'types.d.ts': 'export type MyType = string;',
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+				});
+
+				expect('error' in generated).toBe(false);
+				const content = await fixture.readFile('dist/index.d.ts', 'utf8');
+				expect(content).toContain('type MyType = string');
+			});
 		});
 	});
 });

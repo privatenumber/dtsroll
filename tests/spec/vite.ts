@@ -58,14 +58,14 @@ export default testSuite(({ describe }) => {
 				}),
 			});
 
-			let dtsrollCallCount = 0;
+			let _writeCount = 0;
 			const trackingPlugin = {
 				name: 'track-dtsroll',
 				writeBundle: {
 					sequential: true,
 					order: 'post' as const,
 					handler: () => {
-						dtsrollCallCount += 1;
+						_writeCount += 1;
 					},
 				},
 			};

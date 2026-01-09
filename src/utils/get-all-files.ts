@@ -1,6 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+// Normalize path separators to forward slashes (for package.json exports compatibility)
+const normalizePath = (filePath: string) => filePath.replaceAll('\\', '/');
+
 export const getAllFiles = async (
 	directoryPath: string,
 	dontShortenPath?: boolean,
@@ -14,14 +17,14 @@ export const getAllFiles = async (
 				return (
 					dontShortenPath
 						? files
-						: files.map(file => `./${path.relative(directoryPath, file)}`)
+						: files.map(file => `./${normalizePath(path.relative(directoryPath, file))}`)
 				);
 			}
 
 			return (
 				dontShortenPath
 					? filePath
-					: `./${path.relative(directoryPath, filePath)}`
+					: `./${normalizePath(path.relative(directoryPath, filePath))}`
 			);
 		}),
 	);
