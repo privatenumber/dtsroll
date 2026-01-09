@@ -637,6 +637,55 @@ export default testSuite(({ describe }) => {
 				expect(outputMap.sources.length).toBeGreaterThan(0);
 				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
 			});
+
+			test('preserves sources for empty barrel file compiled with tsc', async ({ onTestFail }) => {
+				// Real-world scenario: barrel file that becomes empty after bundling
+				await using fixture = await createFixture({
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							declarationMap: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2020',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+						},
+						include: ['src'],
+					}),
+					src: {
+						// Empty barrel file - common pattern for re-export entry points
+						'index.ts': 'export {};',
+					},
+				});
+
+				// Compile with tsc to generate real .d.ts and .d.ts.map
+				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+
+				onTestFail(() => console.log('Fixture path:', fixture.path));
+
+				// Verify tsc generated the sourcemap
+				const tscMapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const tscMap = JSON.parse(tscMapContent);
+				expect(tscMap.sources.length).toBeGreaterThan(0);
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				// After dtsroll, the sourcemap should still have sources
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const outputMap = JSON.parse(mapContent);
+
+				// Without the fix, Rollup would produce sources: []
+				// With the fix, sources should still point to the original .ts file
+				expect(outputMap.sources.length).toBeGreaterThan(0);
+				expect(outputMap.sources.some((s: string) => s.endsWith('index.ts'))).toBe(true);
+			});
 		});
 	});
 });
