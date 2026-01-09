@@ -277,6 +277,27 @@ Syntax not yet supported
 				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
 				expect(entry).toBe(fixtures.singleEntryPoint.dist['entry.d.ts']);
 			});
+
+			test('sourcemap', async ({ onTestFail }) => {
+				await using fixture = await createFixture({
+					...fixtures.singleEntryPoint,
+					'package.json': JSON.stringify({
+						exports: './dist/entry.d.ts',
+					}),
+				});
+
+				const spawned = await dtsroll(fixture.path, ['--sourcemap']);
+				onTestFail(() => console.log(spawned));
+				expect('exitCode' in spawned).toBe(false);
+
+				// Should generate .d.ts.map file
+				const mapExists = await fs.access(fixture.getPath('dist/entry.d.ts.map')).then(() => true, () => false);
+				expect(mapExists).toBe(true);
+
+				// Output should reference the sourcemap
+				const entry = await fixture.readFile('dist/entry.d.ts', 'utf8');
+				expect(entry).toContain('//# sourceMappingURL=entry.d.ts.map');
+			});
 		});
 
 		describe('Dependencies', ({ describe, test }) => {

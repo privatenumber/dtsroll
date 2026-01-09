@@ -1,6 +1,8 @@
+import fs from 'node:fs/promises';
 import { expect, testSuite } from 'manten';
 import { createFixture } from 'fs-fixture';
 import outdent from 'outdent';
+import { TraceMap, originalPositionFor } from '@jridgewell/trace-mapping';
 import * as fixtures from '../fixtures.js';
 import { dtsroll } from '#dtsroll';
 
@@ -245,6 +247,86 @@ export default testSuite(({ describe }) => {
 				expect('error' in generated).toBe(false);
 				const content = await fixture.readFile('dist/index.d.ts', 'utf8');
 				expect(content).toContain('type MyType = string');
+			});
+		});
+
+		describe('sourcemaps', ({ test }) => {
+			test('generates sourcemap when enabled', async () => {
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+						import { MyType } from './types.js';
+						export declare const value: MyType;
+						`,
+						'types.d.ts': outdent`
+						export type MyType = {
+							name: string;
+							count: number;
+						};
+						`,
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				// Should generate .d.ts.map file
+				const mapPath = fixture.getPath('dist/index.d.ts.map');
+				const mapExists = await fs.access(mapPath).then(() => true, () => false);
+				expect(mapExists).toBe(true);
+
+				// Output .d.ts should reference the sourcemap
+				const dtsContent = await fixture.readFile('dist/index.d.ts', 'utf8');
+				expect(dtsContent).toContain('//# sourceMappingURL=index.d.ts.map');
+
+				// Sourcemap should be valid JSON with expected structure
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const sourceMap = JSON.parse(mapContent);
+				expect(sourceMap).toHaveProperty('version', 3);
+				expect(sourceMap).toHaveProperty('sources');
+				expect(sourceMap).toHaveProperty('mappings');
+
+				// Verify sources contains the bundled files
+				const sources = sourceMap.sources as string[];
+				expect(sources.some((source: string) => source.endsWith('types.d.ts'))).toBe(true);
+				expect(sources.some((source: string) => source.endsWith('index.d.ts'))).toBe(true);
+
+				// Verify mappings can be parsed and are accurate
+				const tracer = new TraceMap(sourceMap);
+
+				// Find "type MyType" in output (line 1) - should map to types.d.ts
+				const typeDefinitionOriginal = originalPositionFor(tracer, {
+					line: 1,
+					column: 0,
+				});
+				expect(typeDefinitionOriginal.source).toContain('types.d.ts');
+				expect(typeDefinitionOriginal.line).toBe(1);
+
+				// Find "name: string" in output - should map to types.d.ts line 2
+				const lines = dtsContent.split('\n');
+				const nameLineIndex = lines.findIndex(line => line.includes('name: string'));
+				expect(nameLineIndex).toBeGreaterThan(-1);
+				const nameOriginal = originalPositionFor(tracer, {
+					line: nameLineIndex + 1,
+					column: 0,
+				});
+				expect(nameOriginal.source).toContain('types.d.ts');
+				expect(nameOriginal.line).toBe(2);
+
+				// Find "declare const value" in output - should map to index.d.ts
+				const valueLineIndex = lines.findIndex(line => line.includes('declare const value'));
+				expect(valueLineIndex).toBeGreaterThan(-1);
+				const valueOriginal = originalPositionFor(tracer, {
+					line: valueLineIndex + 1,
+					column: 0,
+				});
+				expect(valueOriginal.source).toContain('index.d.ts');
+				expect(valueOriginal.line).toBe(2);
 			});
 		});
 	});

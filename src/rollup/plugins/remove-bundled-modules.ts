@@ -25,15 +25,22 @@ export const removeBundledModulesPlugin = (
 			const modules = Object.values(bundle) as OutputChunk[];
 			const bundledFiles = Array.from(new Set(modules.flatMap(({ moduleIds }) => moduleIds)));
 
-			const fileSizes = bundledFiles.map(moduleId => this.getModuleInfo(moduleId)!.meta);
-			const totalSize = fileSizes.reduce((total, { size }) => total + size, 0);
+			let totalSize = 0;
+			for (const moduleId of bundledFiles) {
+				const moduleInfo = this.getModuleInfo(moduleId);
+				const size = moduleInfo?.meta?.size;
+				if (typeof size === 'number') {
+					totalSize += size;
+				}
+			}
 			sizeRef.value = totalSize;
 
 			const outputFiles = new Set(modules.map(({ fileName }) => path.join(options.dir!, fileName)));
 
 			deleteFiles = bundledFiles.filter(moduleId => (
+				moduleId
 				// To avoid deleting files from symlinked dependencies
-				moduleId.startsWith(outputDirectory)
+				&& moduleId.startsWith(outputDirectory)
 				&& !moduleId.includes(nodeModules)
 				&& !outputFiles.has(moduleId)
 			));
