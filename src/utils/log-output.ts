@@ -1,11 +1,9 @@
-import path from 'node:path';
 import byteSize from 'byte-size';
 import {
 	underline, dim, green, magenta, bold, yellow, lightYellow, red,
 } from 'kolorist';
 import type { Output, DtsrollOutput } from '../types.js';
-import { cwd } from './cwd.js';
-import { normalizePath } from './path-utils.js';
+import { getDisplayPath } from './path-utils.js';
 
 const warningSignUnicode = '\u26A0';
 
@@ -20,12 +18,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 	console.log(
 		inputs
 			.map(([inputFile, inputSource, error]) => {
-				const relativeInputFile = path.relative(cwd, inputFile);
-				const logPath = normalizePath(
-					relativeInputFile.length < inputFile.length
-						? relativeInputFile
-						: inputFile,
-				);
+				const logPath = getDisplayPath(inputFile);
 
 				if (error) {
 					return ` ${lightYellow(`${warningSignUnicode} ${logPath} ${dim(error)}`)}`;
@@ -51,12 +44,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 		externals,
 	} = dtsOutput;
 
-	const outputDirectoryRelative = path.relative(cwd, outputDirectory);
-	const logPath = `${normalizePath(
-		outputDirectoryRelative.length < outputDirectory.length
-			? outputDirectoryRelative
-			: outputDirectory,
-	)}/`;
+	const logPath = `${getDisplayPath(outputDirectory)}/`;
 
 	const logChunk = (
 		{
@@ -82,13 +70,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 				.map((moduleId, index) => {
 					const isLast = index === moduleIds.length - 1;
 					const prefix = `${indent}   ${isLast ? '└─ ' : '├─ '}`;
-
-					const relativeModuleId = path.relative(cwd, moduleId);
-					const logModuleId = normalizePath(
-						relativeModuleId.length < moduleId.length
-							? relativeModuleId
-							: moduleId,
-					);
+					const logModuleId = getDisplayPath(moduleId);
 
 					const bareSpecifier = moduleToPackage[moduleId];
 					if (bareSpecifier) {

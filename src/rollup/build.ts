@@ -2,6 +2,7 @@ import { rollup, type RollupOptions } from 'rollup';
 import { dts } from 'rollup-plugin-dts';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import { dtsExtensions } from '../utils/dts-extensions.js';
+import { DtsrollBuildError } from '../types.js';
 import { createExternalizePlugin } from './plugins/externalize.js';
 import { createImportChainPlugin } from './plugins/import-chain.js';
 import { removeBundledModulesPlugin } from './plugins/remove-bundled-modules.js';
@@ -86,7 +87,11 @@ export const build = async (
 		};
 	} catch (error) {
 		if (error instanceof Error && 'id' in error && typeof error.id === 'string') {
-			(error as unknown as { importChain: string[] }).importChain = getImportChain(error.id);
+			throw new DtsrollBuildError(
+				error.message,
+				error.id,
+				getImportChain(error.id),
+			);
 		}
 		throw error;
 	}

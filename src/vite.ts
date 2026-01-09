@@ -2,6 +2,13 @@ import type { Plugin } from 'vite';
 import { logOutput } from './utils/log-output.js';
 import { dtsroll, type Options } from './index.js';
 
+/**
+ * Vite plugin for bundling TypeScript declaration files.
+ * Runs after vite-plugin-dts in the writeBundle hook.
+ *
+ * @param options - Configuration options (same as dtsroll function)
+ * @returns Vite plugin instance
+ */
 const dtsrollPlugin = (
 	options?: Options,
 ): Plugin => {

@@ -2,6 +2,7 @@ import { cli } from 'cleye';
 import { bgYellow, black } from 'kolorist';
 import { name, version, description } from '../package.json';
 import { logOutput } from './utils/log-output.js';
+import { DtsrollBuildError } from './types.js';
 import { dtsroll } from './index.js';
 
 const argv = cli({
@@ -54,19 +55,16 @@ dtsroll({
 		logOutput(output);
 	},
 ).catch(
-	(error: Error & {
-		id?: string;
-		importChain?: string[];
-	}) => {
+	(error: unknown) => {
 		let errorMessage = '\nFailed to build';
-		if (error.id) {
+		if (error instanceof DtsrollBuildError) {
 			errorMessage += `\n  File: ${error.id}`;
+			if (error.importChain.length > 1) {
+				errorMessage += '\n\n  Import chain:\n    ';
+				errorMessage += error.importChain.join('\n    → ');
+			}
 		}
-		if (error.importChain && error.importChain.length > 1) {
-			errorMessage += '\n\n  Import chain:\n    ';
-			errorMessage += error.importChain.join('\n    → ');
-		}
-		errorMessage += `\n\n${error.message}`;
+		errorMessage += `\n\n${error instanceof Error ? error.message : String(error)}`;
 		console.error(errorMessage);
 		process.exitCode = 1;
 	},

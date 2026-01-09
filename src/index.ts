@@ -8,14 +8,33 @@ import type { Output, Externals, DtsrollOutput } from './types.js';
 import { getPackageName } from './utils/package-name.js';
 import { warningPrefix } from './utils/log-output.js';
 
+/**
+ * Configuration options for dtsroll.
+ */
 export type Options = {
+
+	/** Working directory. Defaults to process.cwd(). */
 	cwd?: string;
+
+	/** Input .d.ts files to bundle. If not provided, auto-detects from package.json. */
 	inputs?: string[];
+
+	/** Packages to externalize (only used when no package.json is present). */
 	external?: string[];
+
+	/** Export conditions for module resolution. */
 	conditions?: string[];
+
+	/** If true, generates output without writing files. */
 	dryRun?: boolean;
 };
 
+/**
+ * Bundle TypeScript declaration files using Rollup.
+ *
+ * @param options - Configuration options
+ * @returns Build output including bundled files, sizes, and externalized packages
+ */
 export const dtsroll = async ({
 	cwd = process.cwd(),
 	inputs,
