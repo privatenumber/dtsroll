@@ -1,11 +1,11 @@
 import { rollup, type RollupOptions } from 'rollup';
 import { dts } from 'rollup-plugin-dts';
 import nodeResolve from '@rollup/plugin-node-resolve';
-import { dtsExtensions } from './dts-extensions.js';
-import { createExternalizePlugin } from './rollup-plugin-externalize.js';
-import { createImportChainPlugin } from './rollup-plugin-import-chain.js';
-import { removeBundledModulesPlugin } from './rollup-plugin-remove-bundled-modules.js';
-import { resolveSubpathImportsPlugin } from './rollup-plugin-resolve-subpath-imports.js';
+import { dtsExtensions } from '../utils/dts-extensions.js';
+import { createExternalizePlugin } from './plugins/externalize.js';
+import { createImportChainPlugin } from './plugins/import-chain.js';
+import { removeBundledModulesPlugin } from './plugins/remove-bundled-modules.js';
+import { resolveSubpathImportsPlugin } from './plugins/resolve-subpath-imports.js';
 
 /**
  * Input array is converted to an object because rollup-plugin-dts has a bug

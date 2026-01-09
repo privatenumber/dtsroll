@@ -3,7 +3,7 @@ import type { OutputChunk } from 'rollup';
 import { getPackageJson } from './utils/package-json.js';
 import { getCommonDirectory } from './utils/get-common-directory.js';
 import { validateInput } from './utils/validate-input.js';
-import { build } from './utils/rollup-build.js';
+import { build } from './rollup/build.js';
 import type { Output, Externals, DtsrollOutput } from './types.js';
 import { getPackageName } from './utils/package-name.js';
 import { warningPrefix } from './utils/log-output.js';
