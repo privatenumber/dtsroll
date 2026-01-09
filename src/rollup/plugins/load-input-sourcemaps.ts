@@ -186,9 +186,10 @@ export const loadInputSourcemapsPlugin = (): Plugin => {
 				const mapPath = path.join(outputDir, mapFileName);
 
 				// Make sources relative to the output file for portability
+				// Use forward slashes for cross-platform sourcemap compatibility
 				const outputFileDir = path.dirname(path.join(outputDir, fileName));
 				const relativeSources = inputSourcemap.sources.map(
-					source => path.relative(outputFileDir, source),
+					source => path.relative(outputFileDir, source).replaceAll('\\', '/'),
 				);
 
 				const fixedMap = {
