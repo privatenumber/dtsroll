@@ -1,7 +1,9 @@
 import path from 'node:path';
 import { expect, testSuite } from 'manten';
+import { createFixture } from 'fs-fixture';
 import { getCommonDirectory } from '../../src/utils/get-common-directory.js';
 import { propertyNeedsQuotes } from '../../src/utils/property-needs-quotes.js';
+import { getPackageJson } from '../../src/utils/package-json.js';
 
 export default testSuite(({ describe }) => {
 	describe('utils', ({ describe }) => {
@@ -95,6 +97,204 @@ export default testSuite(({ describe }) => {
 				expect(propertyNeedsQuotes('café')).toBe(false);
 				expect(propertyNeedsQuotes('日本語')).toBe(false);
 				expect(propertyNeedsQuotes('über')).toBe(false);
+			});
+		});
+
+		describe('getPackageJson', ({ describe, test }) => {
+			test('returns undefined if no package.json', async () => {
+				await using fixture = await createFixture({});
+				const result = await getPackageJson(fixture.path);
+				expect(result).toBe(undefined);
+			});
+
+			test('throws error for malformed JSON', async () => {
+				await using fixture = await createFixture({
+					'package.json': '{ invalid json }',
+				});
+				await expect(getPackageJson(fixture.path)).rejects.toThrow('Failed to parse package.json');
+			});
+
+			describe('getDtsEntryPoints', ({ test }) => {
+				test('reads types field', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({ types: './dist/index.d.ts' }),
+						'dist/index.d.ts': 'export type A = 1;',
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const entries = await pkg!.getDtsEntryPoints();
+					expect(Object.keys(entries)).toHaveLength(1);
+					expect(entries[path.join(fixture.path, 'dist/index.d.ts')]).toBe('types');
+				});
+
+				test('reads typings field', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({ typings: './dist/index.d.ts' }),
+						'dist/index.d.ts': 'export type A = 1;',
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const entries = await pkg!.getDtsEntryPoints();
+					expect(Object.keys(entries)).toHaveLength(1);
+					expect(entries[path.join(fixture.path, 'dist/index.d.ts')]).toBe('typings');
+				});
+
+				test('reads exports with types condition', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							exports: {
+								'.': {
+									types: './dist/index.d.ts',
+									default: './dist/index.js',
+								},
+							},
+						}),
+						'dist/index.d.ts': 'export type A = 1;',
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const entries = await pkg!.getDtsEntryPoints();
+					expect(Object.keys(entries)).toHaveLength(1);
+					expect(entries[path.join(fixture.path, 'dist/index.d.ts')]).toBe('exports["."].types');
+				});
+
+				test('ignores non-.d.ts files', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							types: './dist/index.d.ts',
+							main: './dist/index.js',
+						}),
+						'dist/index.d.ts': 'export type A = 1;',
+						'dist/index.js': 'export const a = 1;',
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const entries = await pkg!.getDtsEntryPoints();
+					expect(Object.keys(entries)).toHaveLength(1);
+				});
+
+				test('handles wildcard exports', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							exports: {
+								'./*': {
+									types: './dist/*.d.ts',
+								},
+							},
+						}),
+						'dist/a.d.ts': 'export type A = 1;',
+						'dist/b.d.ts': 'export type B = 2;',
+						'dist/nested/c.d.ts': 'export type C = 3;',
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const entries = await pkg!.getDtsEntryPoints();
+					// Wildcard matches all files with prefix/suffix, including nested
+					expect(Object.keys(entries)).toHaveLength(3);
+				});
+
+				test('handles multiple export subpaths', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							exports: {
+								'.': { types: './dist/index.d.ts' },
+								'./utils': { types: './dist/utils.d.ts' },
+							},
+						}),
+						'dist/index.d.ts': 'export type A = 1;',
+						'dist/utils.d.ts': 'export type B = 2;',
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const entries = await pkg!.getDtsEntryPoints();
+					expect(Object.keys(entries)).toHaveLength(2);
+				});
+			});
+
+			describe('getExternals', ({ test }) => {
+				test('externalizes dependencies', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							dependencies: { lodash: '^4.0.0' },
+						}),
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const externals = pkg!.getExternals();
+					expect(externals.has('lodash')).toBe(true);
+					expect(externals.get('lodash')).toContain('dependencies');
+				});
+
+				test('externalizes peerDependencies', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							peerDependencies: { react: '^18.0.0' },
+						}),
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const externals = pkg!.getExternals();
+					expect(externals.has('react')).toBe(true);
+					expect(externals.get('react')).toContain('peerDependencies');
+				});
+
+				test('externalizes optionalDependencies', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							optionalDependencies: { fsevents: '^2.0.0' },
+						}),
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const externals = pkg!.getExternals();
+					expect(externals.has('fsevents')).toBe(true);
+					expect(externals.get('fsevents')).toContain('optionalDependencies');
+				});
+
+				test('does not externalize devDependencies', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							devDependencies: { typescript: '^5.0.0' },
+						}),
+					});
+					const pkg = await getPackageJson(fixture.path);
+					const externals = pkg!.getExternals();
+					expect(externals.has('typescript')).toBe(false);
+				});
+			});
+
+			describe('devTypePackages', ({ test }) => {
+				test('maps @types packages to original', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							devDependencies: {
+								'@types/node': '^20.0.0',
+								'@types/lodash': '^4.0.0',
+							},
+						}),
+					});
+					const pkg = await getPackageJson(fixture.path);
+					expect(pkg!.devTypePackages).toEqual({
+						node: '@types/node',
+						lodash: '@types/lodash',
+					});
+				});
+
+				test('empty for private packages', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							private: true,
+							devDependencies: {
+								'@types/node': '^20.0.0',
+							},
+						}),
+					});
+					const pkg = await getPackageJson(fixture.path);
+					expect(pkg!.devTypePackages).toEqual({});
+				});
+
+				test('empty when no @types in devDependencies', async () => {
+					await using fixture = await createFixture({
+						'package.json': JSON.stringify({
+							devDependencies: {
+								typescript: '^5.0.0',
+							},
+						}),
+					});
+					const pkg = await getPackageJson(fixture.path);
+					expect(pkg!.devTypePackages).toEqual({});
+				});
 			});
 		});
 	});
