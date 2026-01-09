@@ -1,8 +1,10 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { expect, testSuite } from 'manten';
 import { createFixture } from 'fs-fixture';
 import outdent from 'outdent';
 import { TraceMap, originalPositionFor } from '@jridgewell/trace-mapping';
+import nanoSpawn from 'nano-spawn';
 import * as fixtures from '../fixtures.js';
 import { dtsroll } from '#dtsroll';
 
@@ -327,6 +329,276 @@ export default testSuite(({ describe }) => {
 				});
 				expect(valueOriginal.source).toContain('index.d.ts');
 				expect(valueOriginal.line).toBe(2);
+			});
+
+			test('chains sourcemaps back to original .ts source files', async ({ onTestFail }) => {
+				await using fixture = await createFixture({
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							declarationMap: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2020',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+						},
+						include: ['src'],
+					}),
+					src: {
+						'index.ts': outdent`
+						import { MyType } from './types.js';
+						export const value: MyType = { name: 'test', count: 42 };
+						`,
+						'types.ts': outdent`
+						export type MyType = {
+							name: string;
+							count: number;
+						};
+						`,
+					},
+				});
+
+				// Run tsc to generate real .d.ts and .d.ts.map files
+				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+
+				onTestFail(() => console.log('Fixture path:', fixture.path));
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				// Read the final sourcemap
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const sourceMap = JSON.parse(mapContent);
+
+				// The final sourcemap should chain back to .ts files, not .d.ts files
+				const sources = sourceMap.sources as string[];
+				const pointsToTs = sources.some(
+					(source: string) => source.endsWith('.ts') && !source.endsWith('.d.ts'),
+				);
+				const pointsToDts = sources.every((source: string) => source.endsWith('.d.ts'));
+
+				// This is the key assertion: sources should point to .ts files
+				expect(pointsToTs).toBe(true);
+				expect(pointsToDts).toBe(false);
+
+				// Verify we can trace back to the original .ts source
+				const tracer = new TraceMap(sourceMap);
+				const dtsContent = await fixture.readFile('dist/index.d.ts', 'utf8');
+				const lines = dtsContent.split('\n');
+
+				// Find MyType definition - should trace back to src/types.ts
+				const typeLineIndex = lines.findIndex(line => line.includes('type MyType'));
+				if (typeLineIndex !== -1) {
+					const typeOriginal = originalPositionFor(tracer, {
+						line: typeLineIndex + 1,
+						column: 0,
+					});
+					expect(typeOriginal.source).toContain('types.ts');
+					expect(typeOriginal.source).not.toContain('.d.ts');
+				}
+			});
+
+			test('handles inline base64 sourcemap', async () => {
+				const sourceMap = {
+					version: 3,
+					sources: ['../src/index.ts'],
+					sourcesContent: ['export const a: string = "hello";'],
+					mappings: 'AAAA',
+					names: [],
+				};
+				const base64Map = Buffer.from(JSON.stringify(sourceMap)).toString('base64');
+
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+						export declare const a: string;
+						//# sourceMappingURL=data:application/json;base64,${base64Map}
+						`,
+					},
+					src: {
+						'index.ts': 'export const a: string = "hello";',
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const outputMap = JSON.parse(mapContent);
+				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+			});
+
+			test('handles inline URL-encoded sourcemap with commas in JSON', async () => {
+				const sourceMap = {
+					version: 3,
+					sources: ['../src/a.ts', '../src/b.ts'],
+					sourcesContent: ['export const a = 1;', 'export const b = 2;'],
+					mappings: 'AAAA;ACAA',
+					names: [],
+				};
+				const encodedMap = encodeURIComponent(JSON.stringify(sourceMap));
+
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+						export declare const a: number;
+						export declare const b: number;
+						//# sourceMappingURL=data:application/json;charset=utf-8,${encodedMap}
+						`,
+					},
+					src: {
+						'a.ts': 'export const a = 1;',
+						'b.ts': 'export const b = 2;',
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const outputMap = JSON.parse(mapContent);
+				// Should have both sources, not truncated at first comma
+				expect(outputMap.sources.length).toBeGreaterThanOrEqual(2);
+			});
+
+			test('handles plain text data URL (no encoding specifier)', async () => {
+				const sourceMap = {
+					version: 3,
+					sources: ['../src/index.ts'],
+					sourcesContent: ['export const x: number = 42;'],
+					mappings: 'AAAA',
+					names: [],
+				};
+				// Plain text data URL - content is URL-encoded but no ;charset or ;base64
+				const encodedMap = encodeURIComponent(JSON.stringify(sourceMap));
+
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+						export declare const x: number;
+						//# sourceMappingURL=data:application/json,${encodedMap}
+						`,
+					},
+					src: {
+						'index.ts': 'export const x: number = 42;',
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const outputMap = JSON.parse(mapContent);
+				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+			});
+
+			test('gracefully handles malformed JSON in sourcemap file', async () => {
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+						export declare const value: string;
+						`,
+						'index.d.ts.map': '{ invalid json here',
+					},
+				});
+
+				// Should not throw, should complete build (just without chaining)
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+			});
+
+			test('falls back to sourceMappingURL when .d.ts.map file missing', async () => {
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+						export declare const value: string;
+						//# sourceMappingURL=maps/index.d.ts.map
+						`,
+						maps: {
+							'index.d.ts.map': JSON.stringify({
+								version: 3,
+								sources: ['../../src/index.ts'],
+								sourcesContent: ['export const value: string = "test";'],
+								mappings: 'AAAA',
+								names: [],
+							}),
+						},
+					},
+					src: {
+						'index.ts': 'export const value: string = "test";',
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const outputMap = JSON.parse(mapContent);
+				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+			});
+
+			test('ignores query string in comment when adjacent map file exists', async () => {
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+						export declare const value: string;
+						//# sourceMappingURL=index.d.ts.map?v=12345
+						`,
+						'index.d.ts.map': JSON.stringify({
+							version: 3,
+							sources: ['../src/index.ts'],
+							sourcesContent: ['export const value: string = "test";'],
+							mappings: 'AAAA',
+							names: [],
+						}),
+					},
+					src: {
+						'index.ts': 'export const value: string = "test";',
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const outputMap = JSON.parse(mapContent);
+				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
 			});
 		});
 	});

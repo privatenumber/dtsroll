@@ -134,8 +134,23 @@ If no entry files are provided, _dtsroll_ reads `package.json` to determine them
 | Flag           | Alias | Description                                       |
 | -------------- | ----- | ------------------------------------------------- |
 | `--dry-run`    | `-d`  | Show what would be bundled without writing files  |
+| `--sourcemap`  | `-s`  | Generate source maps (`.d.ts.map` files)          |
 | `--conditions` | `-C`  | Resolution conditions for [subpath exports](https://nodejs.org/api/packages.html#subpath-exports) (e.g. `production`)         |
 | `--external`   | `-e`  | *(Only when no `package.json`)* Packages to externalize |
+
+#### Why use `--sourcemap`?
+
+Without source maps, "Go to Definition" in VS Code lands you in bundled `.d.ts` files—often a flattened wall of generated types that's hard to navigate.
+
+With `--sourcemap`, _dtsroll_ generates `.d.ts.map` files that map positions in the bundled output back to your original source files. This lets VS Code jump directly to the actual TypeScript implementation instead of the generated declarations.
+
+This is especially useful for:
+- **Monorepos** — Navigate seamlessly across packages to real source
+- **Library authors** — Give consumers a better DX when exploring your types
+- **Anyone debugging types** — Understand types at their origin, not the emitted output
+
+> [!NOTE]
+> For source navigation to work, the original `.ts` source files must be available (either shipped with your package or present locally). If they're not, VS Code falls back to the `.d.ts` file.
 
 ### Vite plugin
 
@@ -161,7 +176,8 @@ import { dtsroll } from 'dtsroll'
 
 await dtsroll({
     cwd: process.cwd(),
-    dryRun: false
+    dryRun: false,
+    sourcemap: true // generates .d.ts.map files
 })
 ```
 
