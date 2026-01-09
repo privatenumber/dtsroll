@@ -30,6 +30,9 @@ importers:
         specifier: 6.3.0
         version: 6.3.0(rollup@4.55.1)(typescript@5.9.3)
     devDependencies:
+      '@jridgewell/trace-mapping':
+        specifier: ^0.3.31
+        version: 0.3.31
       '@types/byte-size':
         specifier: ^8.1.2
         version: 8.1.2

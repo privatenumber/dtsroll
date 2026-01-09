@@ -30,6 +30,7 @@ export const build = async (
 	externals: Map<string, string>,
 	mode: 'generate' | 'write',
 	conditions?: string[],
+	sourcemap?: boolean,
 ) => {
 	const {
 		externalizePlugin,
@@ -44,7 +45,7 @@ export const build = async (
 		input: createInputMap(input, outputDirectory),
 
 		output: {
-			// sourcemap: true,
+			sourcemap,
 			dir: outputDirectory,
 			entryFileNames: '[name]',
 			chunkFileNames: '_dtsroll-chunks/[hash]-[name].ts',

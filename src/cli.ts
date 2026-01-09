@@ -29,10 +29,11 @@ const argv = cli({
 			alias: 'e',
 			description: 'Dependency to externalize',
 		},
-		// sourcemap: {
-		//	 type: Boolean,
-		//	 description: 'Generate sourcemaps',
-		// },
+		sourcemap: {
+			type: Boolean,
+			alias: 's',
+			description: 'Generate sourcemaps',
+		},
 	},
 });
 
@@ -47,6 +48,7 @@ dtsroll({
 	external: flags.external,
 	conditions: flags.conditions,
 	dryRun: flags.dryRun,
+	sourcemap: flags.sourcemap,
 }).then(
 	(output) => {
 		if ('error' in output) {

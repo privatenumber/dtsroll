@@ -27,6 +27,9 @@ export type Options = {
 
 	/** If true, generates output without writing files. */
 	dryRun?: boolean;
+
+	/** If true, generates source maps (.d.ts.map files). */
+	sourcemap?: boolean;
 };
 
 /**
@@ -41,6 +44,7 @@ export const dtsroll = async ({
 	external,
 	conditions,
 	dryRun,
+	sourcemap,
 }: Options = {}): Promise<DtsrollOutput> => {
 	const pkgJson = await getPackageJson(cwd);
 
@@ -89,13 +93,15 @@ export const dtsroll = async ({
 		externals,
 		dryRun ? 'generate' : 'write',
 		conditions,
+		sourcemap,
 	);
 
 	let outputSize = 0;
 	const outputEntries: Output[] = [];
 	const outputChunks: Output[] = [];
 	const moduleImports = new Set<string>();
-	for (const file of built.output as OutputChunk[]) {
+	const chunks = built.output.filter((file): file is OutputChunk => file.type === 'chunk');
+	for (const file of chunks) {
 		const size = Buffer.byteLength(file.code);
 		outputSize += size;
 
