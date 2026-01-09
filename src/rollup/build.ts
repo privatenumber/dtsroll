@@ -82,7 +82,7 @@ export const build = async (
 			built,
 			externalized,
 			getPackageEntryPoint,
-			sourceSize: sizeRef.value!,
+			sourceSize: sizeRef.value ?? 0,
 		};
 	} catch (error) {
 		if (error instanceof Error && 'id' in error && typeof error.id === 'string') {

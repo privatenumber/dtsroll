@@ -53,7 +53,11 @@ dtsroll({
 		}
 		logOutput(output);
 	},
-	(error) => {
+).catch(
+	(error: Error & {
+		id?: string;
+		importChain?: string[];
+	}) => {
 		let errorMessage = '\nFailed to build';
 		if (error.id) {
 			errorMessage += `\n  File: ${error.id}`;

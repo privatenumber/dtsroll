@@ -1,5 +1,5 @@
 import path from 'node:path';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import type { Plugin } from 'rollup';
 import { up } from 'empathic/find';
 import { resolveImports } from 'resolve-pkg-maps';
@@ -7,7 +7,7 @@ import type { PackageJson } from 'type-fest';
 
 const packageJsonCache = new Map<string, PackageJson>();
 
-const findPackageJsonUp = (cwd: string) => {
+const findPackageJsonUp = async (cwd: string) => {
 	const packageJsonPath = up('package.json', { cwd });
 	if (!packageJsonPath) {
 		return undefined;
@@ -18,7 +18,7 @@ const findPackageJsonUp = (cwd: string) => {
 	let packageJson = packageJsonCache.get(packageRoot);
 	if (!packageJson) {
 		try {
-			const content = fs.readFileSync(packageJsonPath, 'utf8');
+			const content = await fs.readFile(packageJsonPath, 'utf8');
 			packageJson = JSON.parse(content) as PackageJson;
 			packageJsonCache.set(packageRoot, packageJson);
 		} catch {
@@ -42,7 +42,7 @@ export const resolveSubpathImportsPlugin = (): Plugin => ({
 			return null;
 		}
 
-		const result = findPackageJsonUp(path.dirname(importer));
+		const result = await findPackageJsonUp(path.dirname(importer));
 		if (!result) {
 			return null;
 		}

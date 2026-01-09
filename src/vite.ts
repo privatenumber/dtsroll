@@ -25,18 +25,26 @@ const dtsrollPlugin = (
 					return;
 				}
 
-				const output = await dtsroll({
-					cwd,
-					...options,
-				});
+				try {
+					const output = await dtsroll({
+						cwd,
+						...options,
+					});
 
-				built = true;
+					built = true;
 
-				if (!noLog) {
-					logOutput(output);
+					if (!noLog) {
+						logOutput(output);
 
-					// Enter new line to distinguish from other Vite logs
-					console.log();
+						// Enter new line to distinguish from other Vite logs
+						console.log();
+					}
+				} catch (error) {
+					built = true;
+					throw new Error(
+						`dtsroll failed: ${error instanceof Error ? error.message : String(error)}`,
+						{ cause: error },
+					);
 				}
 			},
 		},
