@@ -5,7 +5,6 @@ import { dtsExtensions } from '../utils/dts-extensions.js';
 import { DtsrollBuildError } from '../types.js';
 import { createExternalizePlugin } from './plugins/externalize.js';
 import { createImportChainPlugin } from './plugins/import-chain.js';
-import { loadInputSourcemapsPlugin } from './plugins/load-input-sourcemaps.js';
 import { removeBundledModulesPlugin } from './plugins/remove-bundled-modules.js';
 import { resolveSubpathImportsPlugin } from './plugins/resolve-subpath-imports.js';
 
@@ -57,10 +56,6 @@ export const build = async (
 			externalizePlugin,
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
 			resolveSubpathImportsPlugin(),
-
-			// Load existing .d.ts.map files to chain sourcemaps back to original .ts sources
-			sourcemap && loadInputSourcemapsPlugin(),
-
 			nodeResolve({
 				extensions: ['.ts', ...dtsExtensions],
 				exportConditions: conditions,
