@@ -52,8 +52,7 @@
 		"convert-source-map": "^2.0.0",
 		"empathic": "^2.0.0",
 		"resolve-pkg-maps": "^1.0.0",
-		"rollup": "^4.55.1",
-		"rollup-plugin-dts": "6.3.0"
+		"rollup": "^4.55.1"
 	},
 	"peerDependencies": {
 		"typescript": "^4.5 || ^5.0",
@@ -78,6 +77,7 @@
 		"nano-spawn": "^2.0.0",
 		"outdent": "^0.8.0",
 		"pkgroll": "^2.21.5",
+		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/fix/sourcemap-mappings",
 		"tsx": "^4.21.0",
 		"type-fest": "^5.3.1",
 		"typescript": "^5.9.3",
