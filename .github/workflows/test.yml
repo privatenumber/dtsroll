@@ -10,8 +10,7 @@ jobs:
     name: Test
     strategy:
       matrix:
-        # Temporarily only Windows to debug failing sourcemap tests
-        os: [windows-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
@@ -39,5 +38,3 @@ jobs:
 
       - name: Test
         run: pnpm test
-        env:
-          TESTONLY: sourcemaps

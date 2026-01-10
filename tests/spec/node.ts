@@ -533,7 +533,7 @@ export default testSuite(({ describe }) => {
 				expect('error' in generated).toBe(false);
 			});
 
-			test('falls back to sourceMappingURL when .d.ts.map file missing', async ({ onTestFail }) => {
+			test('falls back to sourceMappingURL when .d.ts.map file missing', async () => {
 				await using fixture = await createFixture({
 					dist: {
 						'index.d.ts': outdent`
@@ -565,13 +565,10 @@ export default testSuite(({ describe }) => {
 
 				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
 				const outputMap = JSON.parse(mapContent);
-
-				onTestFail(() => console.log('outputMap.sources:', outputMap.sources));
-
 				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
 			});
 
-			test('ignores query string in comment when adjacent map file exists', async ({ onTestFail }) => {
+			test('ignores query string in comment when adjacent map file exists', async () => {
 				await using fixture = await createFixture({
 					dist: {
 						'index.d.ts': outdent`
@@ -601,13 +598,10 @@ export default testSuite(({ describe }) => {
 
 				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
 				const outputMap = JSON.parse(mapContent);
-
-				onTestFail(() => console.log('outputMap.sources:', outputMap.sources));
-
 				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
 			});
 
-			test('preserves sources for empty entry point files', async ({ onTestFail }) => {
+			test('preserves sources for empty entry point files', async () => {
 				// Rollup generates empty sourcemaps (sources: []) for empty chunks
 				// This test ensures we preserve the original source references
 				await using fixture = await createFixture({
@@ -637,8 +631,6 @@ export default testSuite(({ describe }) => {
 
 				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
 				const outputMap = JSON.parse(mapContent);
-
-				onTestFail(() => console.log('outputMap.sources:', outputMap.sources));
 
 				// Without the fix, sources would be [] (empty)
 				// With the fix, sources should point to the original .ts file
