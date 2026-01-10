@@ -566,10 +566,7 @@ export default testSuite(({ describe }) => {
 				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
 				const outputMap = JSON.parse(mapContent);
 
-				onTestFail(() => {
-					console.log('fixture.path:', fixture.path);
-					console.log('outputMap.sources:', outputMap.sources);
-				});
+				onTestFail(() => console.log('outputMap.sources:', outputMap.sources));
 
 				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
 			});
@@ -605,10 +602,7 @@ export default testSuite(({ describe }) => {
 				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
 				const outputMap = JSON.parse(mapContent);
 
-				onTestFail(() => {
-					console.log('fixture.path:', fixture.path);
-					console.log('outputMap.sources:', outputMap.sources);
-				});
+				onTestFail(() => console.log('outputMap.sources:', outputMap.sources));
 
 				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
 			});
@@ -644,10 +638,7 @@ export default testSuite(({ describe }) => {
 				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
 				const outputMap = JSON.parse(mapContent);
 
-				onTestFail(() => {
-					console.log('fixture.path:', fixture.path);
-					console.log('outputMap.sources:', outputMap.sources);
-				});
+				onTestFail(() => console.log('outputMap.sources:', outputMap.sources));
 
 				// Without the fix, sources would be [] (empty)
 				// With the fix, sources should point to the original .ts file
