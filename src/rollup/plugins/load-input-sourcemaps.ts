@@ -139,17 +139,10 @@ export const loadInputSourcemapsPlugin = (): Plugin => {
 				sourcesContent,
 			});
 
-			return {
-				code,
-				map: {
-					version: inputMap.version,
-					names: inputMap.names,
-					sources,
-					mappings: inputMap.mappings,
-					...(sourcesContent.length > 0 ? { sourcesContent } : {}),
-					...(inputMap.file ? { file: inputMap.file } : {}),
-				},
-			};
+			// Don't return sourcemap here - let rollup-plugin-dts handle sourcemap generation
+			// and source rewriting via its generateBundle hook. Returning a sourcemap here
+			// causes Rollup to chain it with transform's sourcemap, which collapses line mappings.
+			return { code };
 		},
 
 		async writeBundle(options, bundle) {
