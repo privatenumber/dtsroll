@@ -686,6 +686,66 @@ export default testSuite(({ describe }) => {
 				expect(outputMap.sources.length).toBeGreaterThan(0);
 				expect(outputMap.sources.some((s: string) => s.endsWith('index.ts'))).toBe(true);
 			});
+
+			test('sourcemap has line-by-line mappings for Go-to-Definition', async ({ onTestFail }) => {
+				// This test validates that sourcemaps have proper line-by-line mappings
+				// so VSCode's Go-to-Definition works correctly
+				await using fixture = await createFixture({
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							declarationMap: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2020',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+						},
+						include: ['src'],
+					}),
+					src: {
+						'index.ts': `export type User = {
+	id: string;
+	name: string;
+};
+`,
+					},
+				});
+
+				onTestFail(() => console.log('Fixture:', fixture.path));
+
+				// Compile with tsc
+				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+
+				// Run dtsroll
+				await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const map = JSON.parse(mapContent);
+
+				// The bundled output should have:
+				// Line 1: type User = {
+				// Line 2:     id: string;
+				// Line 3:     name: string;
+				// Line 4: };
+				// Line 5: (empty)
+				// Line 6: export type { User };
+
+				// Each line with content should have at least one mapping
+				// Currently rollup-plugin-dts only maps line 1, leaving lines 2-4 unmapped
+				const mappingLines = map.mappings.split(';');
+
+				// Count lines that have mappings (non-empty segments)
+				const linesWithMappings = mappingLines.filter((line: string) => line.length > 0).length;
+
+				// We expect at least 4 lines to have mappings (the type definition lines)
+				// Currently this fails because rollup-plugin-dts only generates mappings for line 1
+				expect(linesWithMappings).toBeGreaterThanOrEqual(4);
+			});
 		});
 	});
 });
