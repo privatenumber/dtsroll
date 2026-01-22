@@ -73,7 +73,7 @@
 		"execa": "9.6.1",
 		"fs-fixture": "^2.11.0",
 		"kolorist": "^1.8.0",
-		"lintroll": "^1.27.1",
+		"lintroll": "^1.28.0",
 		"manten": "^1.10.0",
 		"nano-spawn": "^2.0.0",
 		"outdent": "^0.8.0",

@@ -58,8 +58,8 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
       lintroll:
-        specifier: ^1.27.1
-        version: 1.27.1(@types/estree@1.0.8)(@typescript-eslint/utils@8.52.0(eslint@9.39.2)(typescript@5.9.3))(jsonc-eslint-parser@2.4.2)(typescript@5.9.3)
+        specifier: ^1.28.0
+        version: 1.28.0(@types/estree@1.0.8)(@typescript-eslint/utils@8.52.0(eslint@9.39.2)(typescript@5.9.3))(jsonc-eslint-parser@2.4.2)(typescript@5.9.3)
       manten:
         specifier: ^1.10.0
         version: 1.10.0
@@ -2177,8 +2177,8 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  lintroll@1.27.1:
-    resolution: {integrity: sha512-7sueNcXokIs3D8lRo+pnqmXCOK7lBSKIeGW1YFVspUawUyILljVYmHMe2LBUnF3ISGvNaxLsBbZqjSoYZs5oJw==}
+  lintroll@1.28.0:
+    resolution: {integrity: sha512-jJWjUgi8Cghx7C6GCp7J+nbvRU3Lo6cuUzEb78j8aqFFXKEeDEQZKnYIKV+9HoPtEZf/QtCj/SABPcimkOPTUA==}
     hasBin: true
 
   local-pkg@1.1.2:
@@ -5263,7 +5263,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lintroll@1.27.1(@types/estree@1.0.8)(@typescript-eslint/utils@8.52.0(eslint@9.39.2)(typescript@5.9.3))(jsonc-eslint-parser@2.4.2)(typescript@5.9.3):
+  lintroll@1.28.0(@types/estree@1.0.8)(@typescript-eslint/utils@8.52.0(eslint@9.39.2)(typescript@5.9.3))(jsonc-eslint-parser@2.4.2)(typescript@5.9.3):
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.5.0(eslint@9.39.2)
       '@eslint/js': 9.39.2
