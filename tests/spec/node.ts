@@ -746,6 +746,159 @@ export default testSuite(({ describe }) => {
 				// Currently this fails because rollup-plugin-dts only generates mappings for line 1
 				expect(linesWithMappings).toBeGreaterThanOrEqual(4);
 			});
+
+			test('re-exported types map back to original definition file', async ({ onTestFail }) => {
+				// Test that when a type is re-exported through a barrel file,
+				// the sourcemap points to the original definition, not the re-export
+				//
+				// src/types.ts: defines User
+				// src/index.ts: export { User } from './types'
+				//
+				// After bundling, clicking User should jump to types.ts, not index.ts
+				await using fixture = await createFixture({
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							declarationMap: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2020',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+						},
+						include: ['src'],
+					}),
+					src: {
+						'types.ts': `export type User = {
+	id: string;
+	name: string;
+};
+`,
+						'index.ts': `export { User } from './types.js';
+`,
+					},
+				});
+
+				onTestFail(() => console.log('Fixture:', fixture.path));
+
+				// Compile with tsc
+				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+
+				// Run dtsroll
+				await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				// Read the bundled output and sourcemap
+				const bundledCode = await fixture.readFile('dist/index.d.ts', 'utf8');
+				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
+				const map = JSON.parse(mapContent);
+
+				onTestFail(() => {
+					console.log('Bundled code:', bundledCode);
+					console.log('Sourcemap sources:', map.sources);
+					console.log('Sourcemap mappings:', map.mappings);
+				});
+
+				// The sourcemap should reference types.ts (where User is defined)
+				// not just index.ts (where it's re-exported)
+				const hasTypesSource = map.sources.some((s: string) => s.includes('types.ts'));
+				expect(hasTypesSource).toBe(true);
+
+				// Use trace-mapping to verify the User type definition maps to types.ts
+				const { TraceMap, originalPositionFor } = await import('@jridgewell/trace-mapping');
+				const tracer = new TraceMap(map);
+
+				// Find the line with "type User" in the bundled output
+				const lines = bundledCode.split('\n');
+				const userLineIndex = lines.findIndex(line => line.includes('type User'));
+				expect(userLineIndex).toBeGreaterThanOrEqual(0);
+
+				// Find the column of "User" on that line
+				const userLine = lines[userLineIndex]!;
+				const userCol = userLine.indexOf('User');
+				expect(userCol).toBeGreaterThanOrEqual(0);
+
+				// Look up where "User" maps to in the original source
+				// trace-mapping uses 1-based lines, 0-based columns
+				const pos = originalPositionFor(tracer, {
+					line: userLineIndex + 1,
+					column: userCol,
+				});
+
+				// The mapping should point to types.ts, not index.ts
+				expect(pos.source).toContain('types.ts');
+			});
+
+			test('sourcemap paths are relative to chunk directory for subdirectories', async ({ onTestFail }) => {
+				// Test that when types are in a subdirectory (like dist/contexts/index.d.ts),
+				// the sourcemap paths are relative to the chunk's directory, not the output root
+				//
+				// src/contexts/Config.ts: defines Config
+				// After bundling to dist/contexts/index.d.ts,
+				// sourcemap should have sources: ["../../src/contexts/Config.ts"]
+				// NOT sources: ["../src/contexts/Config.ts"]
+				await using fixture = await createFixture({
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							declarationMap: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2020',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+						},
+						include: ['src'],
+					}),
+					src: {
+						contexts: {
+							'Config.ts': `export type ConfigProps = {
+	enabled: boolean;
+	timeout: number;
+};
+
+export const createConfig = (props: ConfigProps) => props;
+`,
+							'index.ts': `export { createConfig, type ConfigProps } from './Config.js';
+`,
+						},
+					},
+				});
+
+				onTestFail(() => console.log('Fixture:', fixture.path));
+
+				// Compile with tsc
+				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+
+				// Run dtsroll
+				await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/contexts/index.d.ts')],
+					sourcemap: true,
+				});
+
+				// Read the sourcemap
+				const mapContent = await fixture.readFile('dist/contexts/index.d.ts.map', 'utf8');
+				const map = JSON.parse(mapContent);
+
+				onTestFail(() => {
+					console.log('Sourcemap sources:', map.sources);
+				});
+
+				// The sourcemap should have paths relative to dist/contexts/
+				// From dist/contexts/, we need ../../src/contexts/Config.ts
+				const hasCorrectPath = map.sources.some((s: string) => s.startsWith('../../src/'));
+				expect(hasCorrectPath).toBe(true);
+
+				// Should NOT have incorrect paths relative to dist/
+				const hasIncorrectPath = map.sources.some(
+					(s: string) => s.startsWith('../src/') && !s.startsWith('../../'),
+				);
+				expect(hasIncorrectPath).toBe(false);
+			});
 		});
 	});
 });
