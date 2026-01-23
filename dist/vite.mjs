@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-import { d as dtsroll, l as logOutput } from './index-P-kG1yza.mjs';
+import { d as dtsroll, l as logOutput } from './index-DIzmenlM.mjs';
 import 'node:path';
 import 'node:fs/promises';
 import 'rollup';
 import 'typescript';
 import 'node:module';
+import 'convert-source-map';
 import '@rollup/plugin-node-resolve';
 import 'empathic/find';
 import 'resolve-pkg-maps';

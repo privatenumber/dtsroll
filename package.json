@@ -43,7 +43,7 @@
     "convert-source-map": "^2.0.0",
     "empathic": "^2.0.0",
     "resolve-pkg-maps": "^1.0.0",
-    "rollup": "^4.55.1"
+    "rollup": "^4.55.3"
   },
   "peerDependencies": {
     "typescript": "^4.5 || ^5.0",

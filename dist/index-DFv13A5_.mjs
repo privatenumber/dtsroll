@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import { rollup } from 'rollup';
 import ts from 'typescript';
 import { createRequire } from 'node:module';
+import convert$1 from 'convert-source-map';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import { up } from 'empathic/find';
 import { resolveImports } from 'resolve-pkg-maps';
@@ -3925,41 +3926,75 @@ class RelativeModuleDeclarationFixer {
     }
   }
 }
+function hydrateSourcemap(sparseMappings, inputMap, outputCode) {
+  const sparseDecoded = decode(sparseMappings);
+  const inputDecoded = decode(inputMap.mappings);
+  const outputLines = outputCode.split("\n");
+  const hydratedMappings = [];
+  for (let outLine = 0; outLine < sparseDecoded.length; outLine += 1) {
+    const sparseSegments = sparseDecoded[outLine];
+    if (!sparseSegments || sparseSegments.length === 0) {
+      hydratedMappings.push([]);
+      continue;
+    }
+    const anchor = sparseSegments[0];
+    if (!anchor || anchor.length < 4) {
+      hydratedMappings.push(sparseSegments);
+      continue;
+    }
+    const [, srcIdx, srcLine] = anchor;
+    if (srcIdx !== 0 || srcLine === void 0 || srcLine < 0 || srcLine >= inputDecoded.length) {
+      hydratedMappings.push(sparseSegments);
+      continue;
+    }
+    const inputSegments = inputDecoded[srcLine];
+    if (!inputSegments || inputSegments.length === 0) {
+      hydratedMappings.push(sparseSegments);
+      continue;
+    }
+    const anchorOutCol = anchor[0];
+    const anchorSrcCol = anchor.length >= 4 ? anchor[3] : 0;
+    const delta = anchorOutCol - (anchorSrcCol ?? 0);
+    const outputLine = outputLines[outLine] || "";
+    const hydratedSegments = [];
+    for (const seg of inputSegments) {
+      const adjustedCol = seg[0] + delta;
+      if (adjustedCol < 0 || adjustedCol > outputLine.length)
+        continue;
+      if (seg.length === 5) {
+        hydratedSegments.push([adjustedCol, seg[1], seg[2], seg[3], seg[4]]);
+      } else if (seg.length === 4) {
+        hydratedSegments.push([adjustedCol, seg[1], seg[2], seg[3]]);
+      } else {
+        hydratedSegments.push([adjustedCol]);
+      }
+    }
+    hydratedSegments.sort((a, b) => a[0] - b[0]);
+    hydratedMappings.push(hydratedSegments);
+  }
+  return encode(hydratedMappings);
+}
 async function loadInputSourcemap(info) {
-  const { fileName, sourceMappingUrl } = info;
-  if (!sourceMappingUrl) {
-    const inputMapPath = fileName + ".map";
-    try {
-      const inputMapContent = await fs.readFile(inputMapPath, "utf8");
-      return JSON.parse(inputMapContent);
-    } catch {
-      return null;
-    }
+  const { fileName, originalCode } = info;
+  const inlineConverter = convert$1.fromSource(originalCode);
+  if (inlineConverter) {
+    return inlineConverter.toObject();
   }
-  if (!sourceMappingUrl.startsWith("data:")) {
-    try {
-      const urlWithoutQuery = sourceMappingUrl.split("?")[0];
-      const mapFilePath = path.resolve(path.dirname(fileName), urlWithoutQuery);
-      const mapContent = await fs.readFile(mapFilePath, "utf8");
-      return JSON.parse(mapContent);
-    } catch {
-      return null;
-    }
-  }
-  const dataUrlRegex = /^data:([^;,]*)(;[^,]*)?,(.*)$/;
-  const dataMatch = dataUrlRegex.exec(sourceMappingUrl);
-  if (!dataMatch)
-    return null;
-  const params = dataMatch[2] || "";
-  const data = dataMatch[3];
+  const readMap = async (mapFile) => {
+    const urlWithoutQuery = mapFile.split(/[?#]/)[0];
+    const mapFilePath = path.resolve(path.dirname(fileName), urlWithoutQuery);
+    return fs.readFile(mapFilePath, "utf8");
+  };
   try {
-    if (params.includes("base64")) {
-      const decoded = Buffer.from(data, "base64").toString("utf8");
-      return JSON.parse(decoded);
-    } else {
-      const decoded = decodeURIComponent(data);
-      return JSON.parse(decoded);
+    const fileConverter = await convert$1.fromMapFileSource(originalCode, readMap);
+    if (fileConverter) {
+      return fileConverter.toObject();
     }
+  } catch {
+  }
+  try {
+    const mapContent = await fs.readFile(fileName + ".map", "utf8");
+    return JSON.parse(mapContent);
   } catch {
     return null;
   }
@@ -4029,11 +4064,9 @@ const transform = () => {
       }
       const map = preprocessed.code.generateMap({ hires: true, source: fileName });
       if (DTS_EXTENSIONS.test(fileName)) {
-        const sourceMapCommentRegex = /\/\/[#@]\s*sourceMappingURL\s*=\s*(\S+)\s*$/m;
-        const match = sourceMapCommentRegex.exec(code);
         pendingSourcemaps.set(fileName, {
           fileName,
-          sourceMappingUrl: match ? match[1] : null
+          originalCode: code
         });
       }
       return { code, ast: converted.ast, map };
@@ -4085,7 +4118,7 @@ const transform = () => {
         if (inputMap && inputMap.sources) {
           const inputMapDir = path.dirname(fileName);
           inputSourcemaps.set(fileName, {
-            version: inputMap.version || 3,
+            version: inputMap.version ?? 3,
             sources: inputMap.sources.map((source) => path.isAbsolute(source) ? source : path.resolve(inputMapDir, source)),
             sourcesContent: inputMap.sourcesContent,
             mappings: inputMap.mappings,
@@ -4094,33 +4127,13 @@ const transform = () => {
         }
       }
       const outputDir = options.dir || (options.file ? path.dirname(options.file) : process.cwd());
+      const toRelativeSourcePath = (source) => {
+        const relative = path.isAbsolute(source) ? path.relative(outputDir, source) : source;
+        return relative.replaceAll("\\", "/");
+      };
       for (const chunk of Object.values(bundle)) {
         if (chunk.type !== "chunk" || !chunk.map)
           continue;
-        if (chunk.map.sources.length === 0 && chunk.facadeModuleId) {
-          const inputMap = inputSourcemaps.get(chunk.facadeModuleId);
-          if (inputMap && inputMap.sources.length > 0) {
-            const newSources2 = inputMap.sources.map((source) => {
-              const relative = path.isAbsolute(source) ? path.relative(outputDir, source) : source;
-              return relative.replaceAll("\\", "/");
-            });
-            chunk.map.sources = newSources2;
-            chunk.map.sourcesContent = inputMap.sourcesContent || [];
-            const mapFileName2 = `${chunk.fileName}.map`;
-            const mapAsset2 = bundle[mapFileName2];
-            if (mapAsset2 && mapAsset2.type === "asset") {
-              mapAsset2.source = JSON.stringify({
-                version: 3,
-                file: chunk.fileName,
-                sources: newSources2,
-                sourcesContent: inputMap.sourcesContent || [],
-                mappings: chunk.map.mappings,
-                names: chunk.map.names || []
-              });
-            }
-          }
-          continue;
-        }
         const sourcesToRemap = /* @__PURE__ */ new Map();
         for (const source of chunk.map.sources) {
           if (!source)
@@ -4141,13 +4154,10 @@ const transform = () => {
         let newMappings;
         let newNames;
         if (canSimplyReplace && singleInputMap) {
-          newSources = singleInputMap.sources.map((source) => {
-            const relative = path.isAbsolute(source) ? path.relative(outputDir, source) : source;
-            return relative.replaceAll("\\", "/");
-          });
+          newSources = singleInputMap.sources.map(toRelativeSourcePath);
           newSourcesContent = singleInputMap.sourcesContent || [null];
-          newMappings = chunk.map.mappings;
-          newNames = chunk.map.names || [];
+          newMappings = hydrateSourcemap(chunk.map.mappings, singleInputMap, chunk.code);
+          newNames = singleInputMap.names || [];
         } else {
           const remapped = remapping(chunk.map, (file) => {
             const absolutePath = path.resolve(outputDir, file);
@@ -4157,12 +4167,7 @@ const transform = () => {
             }
             return null;
           });
-          newSources = remapped.sources.map((source) => {
-            if (!source)
-              return source;
-            const relative = path.isAbsolute(source) ? path.relative(outputDir, source) : source;
-            return relative.replaceAll("\\", "/");
-          }).filter((s) => s !== null);
+          newSources = remapped.sources.filter((s) => s !== null).map(toRelativeSourcePath);
           newSourcesContent = remapped.sourcesContent || [];
           newMappings = typeof remapped.mappings === "string" ? remapped.mappings : "";
           newNames = remapped.names || [];
