@@ -808,7 +808,6 @@ export default testSuite(({ describe }) => {
 				expect(hasTypesSource).toBe(true);
 
 				// Use trace-mapping to verify the User type definition maps to types.ts
-				const { TraceMap, originalPositionFor } = await import('@jridgewell/trace-mapping');
 				const tracer = new TraceMap(map);
 
 				// Find the line with "type User" in the bundled output
@@ -845,9 +844,11 @@ export default testSuite(({ describe }) => {
 				//
 				// After bundling to dist/contexts/index.d.ts:
 				// - Sources should be .ts files (chained through), NOT .d.ts files
-				// - Paths should be "../../src/..." (relative to dist/contexts/), NOT "../src/..." (relative to dist/)
+				// - Paths should be "../../src/..." (relative to dist/contexts/),
+				//   NOT "../src/..." (relative to dist/)
 				//
-				// The bug was that rollup-plugin-dts used outputDir (dist/) instead of chunkDir (dist/contexts/)
+				// The bug was that rollup-plugin-dts used outputDir (dist/)
+				// instead of chunkDir (dist/contexts/)
 				// when resolving source paths, causing both:
 				// 1. Failed lookup of input sourcemaps (couldn't find the .d.ts.map files)
 				// 2. Wrong relative paths in output (one ../ missing)
@@ -929,8 +930,8 @@ export type { ConsumerProps } from './Consumer.js';
 				//
 				// For dist/contexts/index.d.ts:
 				// - Its sources (Provider.d.ts, Consumer.d.ts) are in dist/contexts/
-				// - The BUGGY code does: path.resolve('dist/', 'Provider.d.ts') = dist/Provider.d.ts (WRONG!)
-				// - The FIXED code does: path.resolve('dist/contexts/', 'Provider.d.ts') = dist/contexts/Provider.d.ts (CORRECT)
+				// - BUGGY: path.resolve('dist/', 'Provider.d.ts') → dist/Provider.d.ts (WRONG)
+				// - FIXED: path.resolve('dist/contexts/', 'Provider.d.ts') → correct path
 				//
 				// Without the fix, sourcemap chaining fails because the intermediate .d.ts files
 				// can't be found at the wrong path, so sources stay as .d.ts instead of .ts files.
