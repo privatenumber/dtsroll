@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { d as dtsroll, l as logOutput } from './index-DA5HL17Y.mjs';
+import { d as dtsroll, l as logOutput } from './index-DaiC_aHH.mjs';
 import 'node:path';
 import 'node:fs/promises';
 import 'rollup';

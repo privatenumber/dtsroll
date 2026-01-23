@@ -4127,18 +4127,19 @@ const transform = () => {
         }
       }
       const outputDir = options.dir || (options.file ? path.dirname(options.file) : process.cwd());
-      const toRelativeSourcePath = (source) => {
-        const relative = path.isAbsolute(source) ? path.relative(outputDir, source) : source;
-        return relative.replaceAll("\\", "/");
-      };
       for (const chunk of Object.values(bundle)) {
         if (chunk.type !== "chunk" || !chunk.map)
           continue;
+        const chunkDir = path.join(outputDir, path.dirname(chunk.fileName));
+        const toRelativeSourcePath = (source) => {
+          const relative = path.isAbsolute(source) ? path.relative(chunkDir, source) : source;
+          return relative.replaceAll("\\", "/");
+        };
         const sourcesToRemap = /* @__PURE__ */ new Map();
         for (const source of chunk.map.sources) {
           if (!source)
             continue;
-          const absoluteSource = path.resolve(outputDir, source);
+          const absoluteSource = path.resolve(chunkDir, source);
           const inputMap = inputSourcemaps.get(absoluteSource);
           if (inputMap) {
             sourcesToRemap.set(absoluteSource, inputMap);
@@ -4176,7 +4177,7 @@ const transform = () => {
           newNames = singleInputMap.names || [];
         } else {
           const remapped = remapping(chunk.map, (file) => {
-            const absolutePath = path.resolve(outputDir, file);
+            const absolutePath = path.resolve(chunkDir, file);
             const inputMap = sourcesToRemap.get(absolutePath);
             if (inputMap) {
               return inputMap;
@@ -4214,7 +4215,8 @@ function updateSourcemapAsset(bundle, chunkFileName, data) {
   if (mapAsset && mapAsset.type === "asset") {
     mapAsset.source = JSON.stringify({
       version: 3,
-      file: chunkFileName,
+      // file should be just the basename since the .map is in the same directory
+      file: path.basename(chunkFileName),
       ...data
     });
   }

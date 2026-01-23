@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { cli } from 'cleye';
-import { b as bgYellow, a as black, d as dtsroll, l as logOutput, D as DtsrollBuildError } from './index-DA5HL17Y.mjs';
+import { b as bgYellow, a as black, d as dtsroll, l as logOutput, D as DtsrollBuildError } from './index-DaiC_aHH.mjs';
 import 'node:path';
 import 'node:fs/promises';
 import 'rollup';
