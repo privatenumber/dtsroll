@@ -4127,25 +4127,42 @@ const transform = () => {
         }
       }
       const outputDir = options.dir || (options.file ? path.dirname(options.file) : process.cwd());
-      const toRelativeSourcePath = (source) => {
-        const relative = path.isAbsolute(source) ? path.relative(outputDir, source) : source;
-        return relative.replaceAll("\\", "/");
-      };
       for (const chunk of Object.values(bundle)) {
         if (chunk.type !== "chunk" || !chunk.map)
           continue;
+        const chunkDir = path.join(outputDir, path.dirname(chunk.fileName));
+        const toRelativeSourcePath = (source) => {
+          const relative = path.isAbsolute(source) ? path.relative(chunkDir, source) : source;
+          return relative.replaceAll("\\", "/");
+        };
         const sourcesToRemap = /* @__PURE__ */ new Map();
         for (const source of chunk.map.sources) {
           if (!source)
             continue;
-          const absoluteSource = path.resolve(outputDir, source);
+          const absoluteSource = path.resolve(chunkDir, source);
           const inputMap = inputSourcemaps.get(absoluteSource);
           if (inputMap) {
             sourcesToRemap.set(absoluteSource, inputMap);
           }
         }
-        if (sourcesToRemap.size === 0)
+        if (sourcesToRemap.size === 0) {
+          if (chunk.map.sources.length === 0 && chunk.facadeModuleId) {
+            const inputMap = inputSourcemaps.get(chunk.facadeModuleId);
+            if (inputMap && inputMap.sources.length > 0) {
+              const newSources2 = inputMap.sources.map(toRelativeSourcePath);
+              const newSourcesContent2 = inputMap.sourcesContent || [];
+              chunk.map.sources = newSources2;
+              chunk.map.sourcesContent = newSourcesContent2;
+              updateSourcemapAsset(bundle, chunk.fileName, {
+                sources: newSources2,
+                sourcesContent: newSourcesContent2,
+                mappings: chunk.map.mappings,
+                names: chunk.map.names || []
+              });
+            }
+          }
           continue;
+        }
         const isSingleSource = chunk.map.sources.length === 1 && sourcesToRemap.size === 1;
         const singleInputMap = isSingleSource ? Array.from(sourcesToRemap.values())[0] : null;
         const canSimplyReplace = singleInputMap && singleInputMap.sources.length === 1;
@@ -4160,7 +4177,7 @@ const transform = () => {
           newNames = singleInputMap.names || [];
         } else {
           const remapped = remapping(chunk.map, (file) => {
-            const absolutePath = path.resolve(outputDir, file);
+            const absolutePath = path.resolve(chunkDir, file);
             const inputMap = sourcesToRemap.get(absolutePath);
             if (inputMap) {
               return inputMap;
@@ -4176,18 +4193,12 @@ const transform = () => {
         chunk.map.sourcesContent = newSourcesContent;
         chunk.map.mappings = newMappings;
         chunk.map.names = newNames;
-        const mapFileName = `${chunk.fileName}.map`;
-        const mapAsset = bundle[mapFileName];
-        if (mapAsset && mapAsset.type === "asset") {
-          mapAsset.source = JSON.stringify({
-            version: 3,
-            file: chunk.fileName,
-            sources: newSources,
-            sourcesContent: newSourcesContent,
-            mappings: newMappings,
-            names: newNames
-          });
-        }
+        updateSourcemapAsset(bundle, chunk.fileName, {
+          sources: newSources,
+          sourcesContent: newSourcesContent,
+          mappings: newMappings,
+          names: newNames
+        });
       }
     }
   };
@@ -4197,6 +4208,17 @@ function writeBlock(codes) {
     return codes.join("\n") + "\n";
   }
   return "";
+}
+function updateSourcemapAsset(bundle, chunkFileName, data) {
+  const mapFileName = `${chunkFileName}.map`;
+  const mapAsset = bundle[mapFileName];
+  if (mapAsset && mapAsset.type === "asset") {
+    mapAsset.source = JSON.stringify({
+      version: 3,
+      file: chunkFileName,
+      ...data
+    });
+  }
 }
 const TS_EXTENSIONS = /\.([cm]ts|[tj]sx?)$/;
 function getModule({ entries, programs, resolvedOptions }, fileName, code) {
