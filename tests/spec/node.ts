@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import { expect, testSuite } from 'manten';
 import { createFixture } from 'fs-fixture';
 import outdent from 'outdent';
 import { TraceMap, originalPositionFor } from '@jridgewell/trace-mapping';
-import nanoSpawn from 'nano-spawn';
+import { readSourceMap } from '../utils/read-sourcemap.js';
 import * as fixtures from '../fixtures.js';
+import { tsc } from '../utils/tsc.js';
 import { dtsroll } from '#dtsroll';
 
 export default testSuite(({ describe }) => {
@@ -287,8 +287,7 @@ export default testSuite(({ describe }) => {
 				expect(dtsContent).toContain('//# sourceMappingURL=index.d.ts.map');
 
 				// Sourcemap should be valid JSON with expected structure
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const sourceMap = JSON.parse(mapContent);
+				const sourceMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
 				expect(sourceMap).toHaveProperty('version', 3);
 				expect(sourceMap).toHaveProperty('sources');
 				expect(sourceMap).toHaveProperty('mappings');
@@ -360,7 +359,7 @@ export default testSuite(({ describe }) => {
 				});
 
 				// Run tsc to generate real .d.ts and .d.ts.map files
-				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+				await tsc(fixture.path);
 
 				onTestFail(() => console.log('Fixture path:', fixture.path));
 
@@ -373,8 +372,7 @@ export default testSuite(({ describe }) => {
 				expect('error' in generated).toBe(false);
 
 				// Read the final sourcemap
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const sourceMap = JSON.parse(mapContent);
+				const sourceMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
 
 				// The final sourcemap should chain back to .ts files, not .d.ts files
 				const sources = sourceMap.sources as string[];
@@ -434,9 +432,8 @@ export default testSuite(({ describe }) => {
 
 				expect('error' in generated).toBe(false);
 
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const outputMap = JSON.parse(mapContent);
-				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
+				expect(outputMap.sources.some(s => s?.includes('src/index.ts'))).toBe(true);
 			});
 
 			test('handles inline URL-encoded sourcemap with commas in JSON', async () => {
@@ -471,8 +468,7 @@ export default testSuite(({ describe }) => {
 
 				expect('error' in generated).toBe(false);
 
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const outputMap = JSON.parse(mapContent);
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
 				// Should have both sources, not truncated at first comma
 				expect(outputMap.sources.length).toBeGreaterThanOrEqual(2);
 			});
@@ -508,9 +504,8 @@ export default testSuite(({ describe }) => {
 
 				expect('error' in generated).toBe(false);
 
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const outputMap = JSON.parse(mapContent);
-				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
+				expect(outputMap.sources.some(s => s?.includes('src/index.ts'))).toBe(true);
 			});
 
 			test('gracefully handles malformed JSON in sourcemap file', async () => {
@@ -563,9 +558,8 @@ export default testSuite(({ describe }) => {
 
 				expect('error' in generated).toBe(false);
 
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const outputMap = JSON.parse(mapContent);
-				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
+				expect(outputMap.sources.some(s => s?.includes('src/index.ts'))).toBe(true);
 			});
 
 			test('ignores query string in comment when adjacent map file exists', async () => {
@@ -596,9 +590,8 @@ export default testSuite(({ describe }) => {
 
 				expect('error' in generated).toBe(false);
 
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const outputMap = JSON.parse(mapContent);
-				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
+				expect(outputMap.sources.some(s => s?.includes('src/index.ts'))).toBe(true);
 			});
 
 			test('preserves sources for empty entry point files', async () => {
@@ -629,13 +622,12 @@ export default testSuite(({ describe }) => {
 
 				expect('error' in generated).toBe(false);
 
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const outputMap = JSON.parse(mapContent);
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
 
 				// Without the fix, sources would be [] (empty)
 				// With the fix, sources should point to the original .ts file
 				expect(outputMap.sources.length).toBeGreaterThan(0);
-				expect(outputMap.sources.some((s: string) => s.includes('src/index.ts'))).toBe(true);
+				expect(outputMap.sources.some(s => s?.includes('src/index.ts'))).toBe(true);
 			});
 
 			test('preserves sources for empty barrel file compiled with tsc', async ({ onTestFail }) => {
@@ -660,13 +652,12 @@ export default testSuite(({ describe }) => {
 				});
 
 				// Compile with tsc to generate real .d.ts and .d.ts.map
-				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+				await tsc(fixture.path);
 
 				onTestFail(() => console.log('Fixture path:', fixture.path));
 
 				// Verify tsc generated the sourcemap
-				const tscMapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const tscMap = JSON.parse(tscMapContent);
+				const tscMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
 				expect(tscMap.sources.length).toBeGreaterThan(0);
 
 				const generated = await dtsroll({
@@ -678,13 +669,12 @@ export default testSuite(({ describe }) => {
 				expect('error' in generated).toBe(false);
 
 				// After dtsroll, the sourcemap should still have sources
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const outputMap = JSON.parse(mapContent);
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
 
 				// Without the fix, Rollup would produce sources: []
 				// With the fix, sources should still point to the original .ts file
 				expect(outputMap.sources.length).toBeGreaterThan(0);
-				expect(outputMap.sources.some((s: string) => s.endsWith('index.ts'))).toBe(true);
+				expect(outputMap.sources.some(s => s?.endsWith('index.ts'))).toBe(true);
 			});
 
 			test('sourcemap has line-by-line mappings for Go-to-Definition', async ({ onTestFail }) => {
@@ -715,7 +705,7 @@ export default testSuite(({ describe }) => {
 				onTestFail(() => console.log('Fixture:', fixture.path));
 
 				// Compile with tsc
-				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+				await tsc(fixture.path);
 
 				// Run dtsroll
 				await dtsroll({
@@ -724,8 +714,7 @@ export default testSuite(({ describe }) => {
 					sourcemap: true,
 				});
 
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const map = JSON.parse(mapContent);
+				const map = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
 
 				// The bundled output should have:
 				// Line 1: type User = {
@@ -782,7 +771,7 @@ export default testSuite(({ describe }) => {
 				onTestFail(() => console.log('Fixture:', fixture.path));
 
 				// Compile with tsc
-				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+				await tsc(fixture.path);
 
 				// Run dtsroll
 				await dtsroll({
@@ -793,8 +782,7 @@ export default testSuite(({ describe }) => {
 
 				// Read the bundled output and sourcemap
 				const bundledCode = await fixture.readFile('dist/index.d.ts', 'utf8');
-				const mapContent = await fixture.readFile('dist/index.d.ts.map', 'utf8');
-				const map = JSON.parse(mapContent);
+				const map = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
 
 				onTestFail(() => {
 					console.log('Bundled code:', bundledCode);
@@ -804,7 +792,7 @@ export default testSuite(({ describe }) => {
 
 				// The sourcemap should reference types.ts (where User is defined)
 				// not just index.ts (where it's re-exported)
-				const hasTypesSource = map.sources.some((s: string) => s.includes('types.ts'));
+				const hasTypesSource = map.sources.some(s => s?.includes('types.ts'));
 				expect(hasTypesSource).toBe(true);
 
 				// Use trace-mapping to verify the User type definition maps to types.ts
@@ -887,7 +875,7 @@ export type { ConsumerProps } from './Consumer.js';
 				onTestFail(() => console.log('Fixture:', fixture.path));
 
 				// Compile with tsc
-				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+				await tsc(fixture.path);
 
 				// Run dtsroll
 				await dtsroll({
@@ -897,8 +885,7 @@ export type { ConsumerProps } from './Consumer.js';
 				});
 
 				// Read the sourcemap
-				const mapContent = await fixture.readFile('dist/contexts/index.d.ts.map', 'utf8');
-				const map = JSON.parse(mapContent);
+				const map = await readSourceMap(fixture.getPath('dist/contexts/index.d.ts.map'));
 
 				onTestFail(() => {
 					console.log('Sourcemap sources:', map.sources);
@@ -910,13 +897,13 @@ export type { ConsumerProps } from './Consumer.js';
 				// Sources should point to original .ts files, NOT intermediate .d.ts files
 				// If the bug is present, sources will be like ['Provider.d.ts', 'Consumer.d.ts']
 				const hasOriginalTsSources = map.sources.every(
-					(s: string) => s.endsWith('.ts') && !s.endsWith('.d.ts'),
+					s => s?.endsWith('.ts') && !s?.endsWith('.d.ts'),
 				);
 				expect(hasOriginalTsSources).toBe(true);
 
 				// The sourcemap should have paths relative to dist/contexts/
 				// From dist/contexts/, we need ../../src/contexts/Provider.ts
-				const hasCorrectRelativePaths = map.sources.every((s: string) => s.startsWith('../../src/'));
+				const hasCorrectRelativePaths = map.sources.every(s => s?.startsWith('../../src/'));
 				expect(hasCorrectRelativePaths).toBe(true);
 			});
 
@@ -965,7 +952,7 @@ export type { ConsumerProps } from './Consumer.js';
 				onTestFail(() => console.log('Fixture:', fixture.path));
 
 				// Compile with tsc
-				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+				await tsc(fixture.path);
 
 				// Run dtsroll with MULTIPLE inputs from different subdirectories
 				// This makes getCommonDirectory return dist/ instead of dist/contexts/
@@ -979,8 +966,7 @@ export type { ConsumerProps } from './Consumer.js';
 				});
 
 				// Check contexts sourcemap
-				const contextsMapContent = await fixture.readFile('dist/contexts/index.d.ts.map', 'utf8');
-				const contextsMap = JSON.parse(contextsMapContent);
+				const contextsMap = await readSourceMap(fixture.getPath('dist/contexts/index.d.ts.map'));
 
 				onTestFail(() => {
 					console.log('contexts sourcemap sources:', contextsMap.sources);
@@ -990,31 +976,30 @@ export type { ConsumerProps } from './Consumer.js';
 				// If bug is present: ['Provider.d.ts', 'Consumer.d.ts']
 				// If fixed: ['../../src/contexts/Provider.ts', '../../src/contexts/Consumer.ts']
 				const contextsHasTsSources = contextsMap.sources.every(
-					(s: string) => s.endsWith('.ts') && !s.endsWith('.d.ts'),
+					s => s?.endsWith('.ts') && !s?.endsWith('.d.ts'),
 				);
 				expect(contextsHasTsSources).toBe(true);
 
 				// Paths should be relative to dist/contexts/ (../../src/...)
 				const contextsHasCorrectPaths = contextsMap.sources.every(
-					(s: string) => s.startsWith('../../src/contexts/'),
+					s => s?.startsWith('../../src/contexts/'),
 				);
 				expect(contextsHasCorrectPaths).toBe(true);
 
 				// Check utils sourcemap
-				const utilsMapContent = await fixture.readFile('dist/utils/index.d.ts.map', 'utf8');
-				const utilsMap = JSON.parse(utilsMapContent);
+				const utilsMap = await readSourceMap(fixture.getPath('dist/utils/index.d.ts.map'));
 
 				onTestFail(() => {
 					console.log('utils sourcemap sources:', utilsMap.sources);
 				});
 
 				const utilsHasTsSources = utilsMap.sources.every(
-					(s: string) => s.endsWith('.ts') && !s.endsWith('.d.ts'),
+					s => s?.endsWith('.ts') && !s?.endsWith('.d.ts'),
 				);
 				expect(utilsHasTsSources).toBe(true);
 
 				const utilsHasCorrectPaths = utilsMap.sources.every(
-					(s: string) => s.startsWith('../../src/utils/'),
+					s => s?.startsWith('../../src/utils/'),
 				);
 				expect(utilsHasCorrectPaths).toBe(true);
 			});
