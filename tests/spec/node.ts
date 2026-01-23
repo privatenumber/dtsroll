@@ -969,8 +969,14 @@ export type { ConsumerProps } from './Consumer.js';
 				const contextsMap = await readSourceMap(fixture.getPath('dist/contexts/index.d.ts.map'));
 
 				onTestFail(() => {
-					console.log('contexts sourcemap sources:', contextsMap.sources);
+					console.log('contexts sourcemap:', {
+						file: contextsMap.file,
+						sources: contextsMap.sources,
+					});
 				});
+
+				// file field should be just the basename, not a path
+				expect(contextsMap.file).toBe('index.d.ts');
 
 				// Sources should be .ts files, NOT .d.ts files
 				// If bug is present: ['Provider.d.ts', 'Consumer.d.ts']
@@ -990,8 +996,14 @@ export type { ConsumerProps } from './Consumer.js';
 				const utilsMap = await readSourceMap(fixture.getPath('dist/utils/index.d.ts.map'));
 
 				onTestFail(() => {
-					console.log('utils sourcemap sources:', utilsMap.sources);
+					console.log('utils sourcemap:', {
+						file: utilsMap.file,
+						sources: utilsMap.sources,
+					});
 				});
+
+				// file field should be just the basename
+				expect(utilsMap.file).toBe('index.d.ts');
 
 				const utilsHasTsSources = utilsMap.sources.every(
 					s => s?.endsWith('.ts') && !s?.endsWith('.d.ts'),
