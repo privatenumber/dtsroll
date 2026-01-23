@@ -834,12 +834,23 @@ export default testSuite(({ describe }) => {
 
 			test('sourcemap paths are relative to chunk directory for subdirectories', async ({ onTestFail }) => {
 				// Test that when types are in a subdirectory (like dist/contexts/index.d.ts),
-				// the sourcemap paths are relative to the chunk's directory, not the output root
+				// the sourcemap correctly chains to original .ts sources with the right relative paths.
 				//
-				// src/contexts/Config.ts: defines Config
-				// After bundling to dist/contexts/index.d.ts,
-				// sourcemap should have sources: ["../../src/contexts/Config.ts"]
-				// NOT sources: ["../src/contexts/Config.ts"]
+				// This test uses MULTIPLE source files to trigger the multi-source remapping
+				// code path (not the simple single-source replace path).
+				//
+				// src/contexts/Provider.ts: defines ProviderProps
+				// src/contexts/Consumer.ts: defines ConsumerProps
+				// src/contexts/index.ts: re-exports both
+				//
+				// After bundling to dist/contexts/index.d.ts:
+				// - Sources should be .ts files (chained through), NOT .d.ts files
+				// - Paths should be "../../src/..." (relative to dist/contexts/), NOT "../src/..." (relative to dist/)
+				//
+				// The bug was that rollup-plugin-dts used outputDir (dist/) instead of chunkDir (dist/contexts/)
+				// when resolving source paths, causing both:
+				// 1. Failed lookup of input sourcemaps (couldn't find the .d.ts.map files)
+				// 2. Wrong relative paths in output (one ../ missing)
 				await using fixture = await createFixture({
 					'tsconfig.json': JSON.stringify({
 						compilerOptions: {
@@ -855,14 +866,18 @@ export default testSuite(({ describe }) => {
 					}),
 					src: {
 						contexts: {
-							'Config.ts': `export type ConfigProps = {
+							'Provider.ts': `export type ProviderProps = {
 	enabled: boolean;
 	timeout: number;
 };
-
-export const createConfig = (props: ConfigProps) => props;
 `,
-							'index.ts': `export { createConfig, type ConfigProps } from './Config.js';
+							'Consumer.ts': `export type ConsumerProps = {
+	name: string;
+	value: number;
+};
+`,
+							'index.ts': `export type { ProviderProps } from './Provider.js';
+export type { ConsumerProps } from './Consumer.js';
 `,
 						},
 					},
@@ -888,16 +903,119 @@ export const createConfig = (props: ConfigProps) => props;
 					console.log('Sourcemap sources:', map.sources);
 				});
 
-				// The sourcemap should have paths relative to dist/contexts/
-				// From dist/contexts/, we need ../../src/contexts/Config.ts
-				const hasCorrectPath = map.sources.some((s: string) => s.startsWith('../../src/'));
-				expect(hasCorrectPath).toBe(true);
+				// Verify we have multiple sources (triggers multi-source remapping path)
+				expect(map.sources.length).toBeGreaterThan(1);
 
-				// Should NOT have incorrect paths relative to dist/
-				const hasIncorrectPath = map.sources.some(
-					(s: string) => s.startsWith('../src/') && !s.startsWith('../../'),
+				// Sources should point to original .ts files, NOT intermediate .d.ts files
+				// If the bug is present, sources will be like ['Provider.d.ts', 'Consumer.d.ts']
+				const hasOriginalTsSources = map.sources.every(
+					(s: string) => s.endsWith('.ts') && !s.endsWith('.d.ts'),
 				);
-				expect(hasIncorrectPath).toBe(false);
+				expect(hasOriginalTsSources).toBe(true);
+
+				// The sourcemap should have paths relative to dist/contexts/
+				// From dist/contexts/, we need ../../src/contexts/Provider.ts
+				const hasCorrectRelativePaths = map.sources.every((s: string) => s.startsWith('../../src/'));
+				expect(hasCorrectRelativePaths).toBe(true);
+			});
+
+			test('sourcemap paths correct when multiple inputs from different subdirectories', async ({ onTestFail }) => {
+				// This test exposes the chunkDir vs outputDir bug.
+				//
+				// When there are multiple inputs from different subdirectories:
+				// - inputs: [dist/contexts/index.d.ts, dist/utils/index.d.ts]
+				// - getCommonDirectory returns: dist/ (common parent)
+				// - outputDir passed to rollup-plugin-dts: dist/
+				//
+				// For dist/contexts/index.d.ts:
+				// - Its sources (Provider.d.ts, Consumer.d.ts) are in dist/contexts/
+				// - The BUGGY code does: path.resolve('dist/', 'Provider.d.ts') = dist/Provider.d.ts (WRONG!)
+				// - The FIXED code does: path.resolve('dist/contexts/', 'Provider.d.ts') = dist/contexts/Provider.d.ts (CORRECT)
+				//
+				// Without the fix, sourcemap chaining fails because the intermediate .d.ts files
+				// can't be found at the wrong path, so sources stay as .d.ts instead of .ts files.
+				await using fixture = await createFixture({
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							declarationMap: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2020',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+						},
+						include: ['src'],
+					}),
+					src: {
+						contexts: {
+							'Provider.ts': 'export type ProviderProps = { enabled: boolean; };',
+							'Consumer.ts': 'export type ConsumerProps = { name: string; };',
+							'index.ts': "export type { ProviderProps } from './Provider.js'; export type { ConsumerProps } from './Consumer.js';",
+						},
+						utils: {
+							'Formatter.ts': 'export type FormatterOptions = { locale: string; };',
+							'Parser.ts': 'export type ParserConfig = { strict: boolean; };',
+							'index.ts': "export type { FormatterOptions } from './Formatter.js'; export type { ParserConfig } from './Parser.js';",
+						},
+					},
+				});
+
+				onTestFail(() => console.log('Fixture:', fixture.path));
+
+				// Compile with tsc
+				await nanoSpawn(path.resolve('node_modules/.bin/tsc'), [], { cwd: fixture.path });
+
+				// Run dtsroll with MULTIPLE inputs from different subdirectories
+				// This makes getCommonDirectory return dist/ instead of dist/contexts/
+				await dtsroll({
+					cwd: fixture.path,
+					inputs: [
+						fixture.getPath('dist/contexts/index.d.ts'),
+						fixture.getPath('dist/utils/index.d.ts'),
+					],
+					sourcemap: true,
+				});
+
+				// Check contexts sourcemap
+				const contextsMapContent = await fixture.readFile('dist/contexts/index.d.ts.map', 'utf8');
+				const contextsMap = JSON.parse(contextsMapContent);
+
+				onTestFail(() => {
+					console.log('contexts sourcemap sources:', contextsMap.sources);
+				});
+
+				// Sources should be .ts files, NOT .d.ts files
+				// If bug is present: ['Provider.d.ts', 'Consumer.d.ts']
+				// If fixed: ['../../src/contexts/Provider.ts', '../../src/contexts/Consumer.ts']
+				const contextsHasTsSources = contextsMap.sources.every(
+					(s: string) => s.endsWith('.ts') && !s.endsWith('.d.ts'),
+				);
+				expect(contextsHasTsSources).toBe(true);
+
+				// Paths should be relative to dist/contexts/ (../../src/...)
+				const contextsHasCorrectPaths = contextsMap.sources.every(
+					(s: string) => s.startsWith('../../src/contexts/'),
+				);
+				expect(contextsHasCorrectPaths).toBe(true);
+
+				// Check utils sourcemap
+				const utilsMapContent = await fixture.readFile('dist/utils/index.d.ts.map', 'utf8');
+				const utilsMap = JSON.parse(utilsMapContent);
+
+				onTestFail(() => {
+					console.log('utils sourcemap sources:', utilsMap.sources);
+				});
+
+				const utilsHasTsSources = utilsMap.sources.every(
+					(s: string) => s.endsWith('.ts') && !s.endsWith('.d.ts'),
+				);
+				expect(utilsHasTsSources).toBe(true);
+
+				const utilsHasCorrectPaths = utilsMap.sources.every(
+					(s: string) => s.startsWith('../../src/utils/'),
+				);
+				expect(utilsHasCorrectPaths).toBe(true);
 			});
 		});
 	});
