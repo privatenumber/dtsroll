@@ -2,25 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { expect, testSuite } from 'manten';
 import { createFixture } from 'fs-fixture';
-import nanoSpawn, { type SubprocessError } from 'nano-spawn';
 import * as fixtures from '../fixtures.js';
-
-const dtsrollPath = path.resolve('./dist/cli.mjs');
-
-const dtsroll = (
-	cwd: string,
-	args: string[],
-) => nanoSpawn(
-	'node',
-	[dtsrollPath, ...args],
-	{
-		cwd,
-		env: {
-			...process.env,
-			NO_COLOR: '1',
-		},
-	},
-).catch(error => error as SubprocessError);
+import { dtsroll } from '../utils/dtsroll.js';
 
 export default testSuite(({ describe }) => {
 	describe('cli', ({ describe, test }) => {
