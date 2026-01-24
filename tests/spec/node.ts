@@ -1015,6 +1015,249 @@ export type { ConsumerProps } from './Consumer.js';
 				);
 				expect(utilsHasCorrectPaths).toBe(true);
 			});
+
+			test('output sourcemap does not have sourcesContent', async () => {
+				// TypeScript's tsserver rejects sourcemaps with sourcesContent
+				// https://github.com/microsoft/TypeScript/blob/b19a9da2a3b8f2a720d314d01258dd2bdc110fef/src/services/sourcemaps.ts#L226
+				// If present, Go-to-Definition silently fails
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+							export declare const value: string;
+							//# sourceMappingURL=index.d.ts.map
+						`,
+						'index.d.ts.map': JSON.stringify({
+							version: 3,
+							file: 'index.d.ts',
+							sources: ['../src/index.ts'],
+							sourcesContent: ['export const value: string = "test";'],
+							mappings: 'AAAA,eAAO,MAAM,KAAK,EAAE,MAAM,CAAC',
+						}),
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
+
+				// Output should NOT have sourcesContent (stripped for TS compatibility)
+				expect(outputMap).not.toHaveProperty('sourcesContent');
+			});
+
+			test('preserves and normalizes URL sourceRoot', async () => {
+				// sourceRoot can be a URL (e.g., for source code hosted on GitHub)
+				// It should be preserved (not mangled by path.resolve()) and
+				// relative paths like ../ should be normalized via new URL()
+				await using fixture = await createFixture({
+					dist: {
+						'a.d.ts': outdent`
+							export declare const a: string;
+							//# sourceMappingURL=a.d.ts.map
+						`,
+						'a.d.ts.map': JSON.stringify({
+							version: 3,
+							file: 'a.d.ts',
+							sourceRoot: 'https://raw.githubusercontent.com/example/repo/main/src/',
+							sources: ['a.ts'],
+							mappings: 'AAAA,eAAO,MAAM,CAAC,EAAE,MAAM,CAAC',
+						}),
+						'b.d.ts': outdent`
+							export declare const b: string;
+							//# sourceMappingURL=b.d.ts.map
+						`,
+						'b.d.ts.map': JSON.stringify({
+							version: 3,
+							file: 'b.d.ts',
+							sourceRoot: 'https://example.com/dist/types/',
+							sources: ['../../src/b.ts'],
+							mappings: 'AAAA,eAAO,MAAM,CAAC,EAAE,MAAM,CAAC',
+						}),
+					},
+				});
+
+				// Test preservation
+				const genA = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/a.d.ts')],
+					sourcemap: true,
+				});
+				expect('error' in genA).toBe(false);
+
+				const mapA = await readSourceMap(fixture.getPath('dist/a.d.ts.map'));
+				const hasUrlSource = mapA.sources.some(s => s?.startsWith('https://raw.githubusercontent.com/'));
+				expect(hasUrlSource).toBe(true);
+
+				// Test normalization (../ paths resolved via new URL())
+				const genB = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/b.d.ts')],
+					sourcemap: true,
+				});
+				expect('error' in genB).toBe(false);
+
+				const mapB = await readSourceMap(fixture.getPath('dist/b.d.ts.map'));
+				// Should be normalized to https://example.com/src/b.ts
+				// NOT https://example.com/dist/types/../../src/b.ts
+				expect(mapB.sources[0]).toBe('https://example.com/src/b.ts');
+			});
+
+			test('Go-to-Definition maps to exact identifier column', async ({ onTestFail }) => {
+				// Verify per-identifier precision, not just per-line
+				// Clicking on "id" should map to column > 0 in source
+				await using fixture = await createFixture({
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							declarationMap: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2020',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+						},
+						include: ['src'],
+					}),
+					src: {
+						'index.ts': outdent`
+							export type User = {
+								id: string;
+								name: string;
+							};
+						`,
+					},
+				});
+
+				await tsc(fixture.path);
+
+				await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				const map = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
+				const tracer = new TraceMap(map);
+
+				// Read the output to find the column of "id" on line 2
+				const output = await fixture.readFile('dist/index.d.ts', 'utf8');
+				const lines = output.split('\n');
+				const idLine = lines.findIndex(l => l.includes('id:'));
+
+				onTestFail(() => {
+					console.log('Output:', output);
+					console.log('Mappings:', map.mappings);
+					console.log('idLine:', idLine);
+				});
+
+				if (idLine !== -1) {
+					const idColumn = lines[idLine]!.indexOf('id');
+					const pos = originalPositionFor(tracer, {
+						line: idLine + 1, // 1-indexed
+						column: idColumn,
+					});
+
+					// Should map to a specific column, not just line start (column 0)
+					// This verifies per-identifier precision from the hydration algorithm
+					expect(pos.column).not.toBeNull();
+					expect(pos.column).toBeGreaterThan(0);
+				}
+			});
+
+			test('handles null in sources array', async () => {
+				// Some tools emit null sources - shouldn't crash
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+							export declare const value: string;
+							//# sourceMappingURL=index.d.ts.map
+						`,
+						'index.d.ts.map': JSON.stringify({
+							version: 3,
+							file: 'index.d.ts',
+							sources: [null, '../src/index.ts'],
+							mappings: 'AACA,eAAO,MAAM,KAAK,EAAE,MAAM,CAAC',
+						}),
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				// Should not crash - that's the main assertion
+				expect('error' in generated).toBe(false);
+			});
+
+			test('strips hash fragment from sourceMappingURL', async () => {
+				// sourceMappingURL can have hash fragments for cache busting
+				// We should strip them when loading the file
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+							export declare const value: string;
+							//# sourceMappingURL=index.d.ts.map#v12345
+						`,
+						'index.d.ts.map': JSON.stringify({
+							version: 3,
+							file: 'index.d.ts',
+							sources: ['../src/index.ts'],
+							mappings: 'AAAA,eAAO,MAAM,KAAK,EAAE,MAAM,CAAC',
+						}),
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
+				expect(outputMap.sources.some(s => s?.includes('src/index.ts'))).toBe(true);
+			});
+
+			test('file:// URL sources pass through unchanged', async () => {
+				// TypeScript can emit file:// URLs in sources
+				// They should pass through without being mangled by path functions
+				await using fixture = await createFixture({
+					dist: {
+						'index.d.ts': outdent`
+							export declare const value: string;
+							//# sourceMappingURL=index.d.ts.map
+						`,
+						'index.d.ts.map': JSON.stringify({
+							version: 3,
+							file: 'index.d.ts',
+							sources: ['file:///absolute/path/to/src/index.ts'],
+							mappings: 'AAAA,eAAO,MAAM,KAAK,EAAE,MAAM,CAAC',
+						}),
+					},
+				});
+
+				const generated = await dtsroll({
+					cwd: fixture.path,
+					inputs: [fixture.getPath('dist/index.d.ts')],
+					sourcemap: true,
+				});
+
+				expect('error' in generated).toBe(false);
+
+				const outputMap = await readSourceMap(fixture.getPath('dist/index.d.ts.map'));
+
+				// file:// URL should be preserved exactly
+				const hasFileUrl = outputMap.sources.some(s => s?.startsWith('file://'));
+				expect(hasFileUrl).toBe(true);
+			});
 		});
 	});
 });
