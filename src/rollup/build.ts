@@ -62,6 +62,7 @@ export const build = async (
 			}),
 			dts({
 				respectExternal: true,
+				sourcemap,
 
 				/**
 				 * Setting a tsconfig or compilerOptions shouldn't be necessary since
