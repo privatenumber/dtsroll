@@ -13,27 +13,6 @@ export type Output = OutputChunk & {
 };
 
 /**
- * Error thrown when dtsroll fails to build a declaration file.
- * Contains the file path and import chain for debugging.
- */
-export class DtsrollBuildError extends Error {
-	id: string;
-
-	importChain: string[];
-
-	constructor(
-		message: string,
-		id: string,
-		importChain: string[],
-	) {
-		super(message);
-		this.name = 'DtsrollBuildError';
-		this.id = id;
-		this.importChain = importChain;
-	}
-}
-
-/**
  * List of externalized packages with metadata.
  * Each entry is [packageName, reason, warning?].
  */

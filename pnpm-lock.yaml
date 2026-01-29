@@ -29,6 +29,9 @@ importers:
       rollup:
         specifier: ^4.55.3
         version: 4.56.0
+      rollup-plugin-import-trace:
+        specifier: github:privatenumber/rollup-plugin-import-trace#npm/develop
+        version: git+https://git@github.com:privatenumber/rollup-plugin-import-trace.git#9a14076424b56eff484d15a3cc30dbd616e615f4(rollup@4.56.0)(vite@7.3.1(@types/node@25.0.10)(tsx@4.21.0)(yaml@2.8.2))
     devDependencies:
       '@jridgewell/trace-mapping':
         specifier: ^0.3.31
@@ -2639,6 +2642,17 @@ packages:
     peerDependencies:
       rollup: ^3.29.4 || ^4
       typescript: ^4.5 || ^5.0
+
+  rollup-plugin-import-trace@git+https://git@github.com:privatenumber/rollup-plugin-import-trace.git#9a14076424b56eff484d15a3cc30dbd616e615f4:
+    resolution: {commit: 9a14076424b56eff484d15a3cc30dbd616e615f4, repo: git@github.com:privatenumber/rollup-plugin-import-trace.git, type: git}
+    version: 0.0.0-semantic-release
+    engines: {node: '>=18'}
+    peerDependencies:
+      rollup: ^3.0.0 || ^4.0.0
+      vite: ^5.0.0 || ^6.0.0 || ^7.0.0
+    peerDependenciesMeta:
+      vite:
+        optional: true
 
   rollup-pluginutils@2.8.2:
     resolution: {integrity: sha512-EEp9NhnUkwY8aif6bxgovPHMoMoNr2FulJziTndpt5H9RdwC47GSGuII9XxpSdzVGM0GWrNPHV6ie1LTNJPaLQ==}
@@ -5975,6 +5989,12 @@ snapshots:
       typescript: 5.9.3
     optionalDependencies:
       '@babel/code-frame': 7.28.6
+
+  rollup-plugin-import-trace@git+https://git@github.com:privatenumber/rollup-plugin-import-trace.git#9a14076424b56eff484d15a3cc30dbd616e615f4(rollup@4.56.0)(vite@7.3.1(@types/node@25.0.10)(tsx@4.21.0)(yaml@2.8.2)):
+    dependencies:
+      rollup: 4.56.0
+    optionalDependencies:
+      vite: 7.3.1(@types/node@25.0.10)(tsx@4.21.0)(yaml@2.8.2)
 
   rollup-pluginutils@2.8.2:
     dependencies:
