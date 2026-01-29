@@ -81,8 +81,9 @@ Syntax not yet supported
   2 | declare var foo = require('foo');
 
 Import trace:
-  ${entryPath}
-  ↳ ${invalidPath}`);
+    ${entryPath}
+    ↳ ${invalidPath}
+`);
 			});
 		});
 
