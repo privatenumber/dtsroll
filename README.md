@@ -1,7 +1,10 @@
-<p align="center">
-  <img width="200" src="./.github/logo.webp">
-</p>
-<h2 align="center">dtsroll</h2>
+<h2 align="center">
+    <img width="180" src="./.github/logo.webp">
+    <br>
+    dtsroll
+    <br><br>
+<a href="https://npm.im/dtsroll"><img src="https://badgen.net/npm/v/dtsroll"></a> <a href="https://npm.im/dtsroll"><img src="https://badgen.net/npm/dm/dtsroll"></a>
+</h2>
 
 Are you publishing a TypeScript project where consumers encounter type-checking errors like:
 
