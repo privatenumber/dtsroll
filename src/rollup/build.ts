@@ -1,10 +1,9 @@
 import { rollup, type RollupOptions } from 'rollup';
 import { dts } from 'rollup-plugin-dts';
 import nodeResolve from '@rollup/plugin-node-resolve';
+import { importTrace } from 'rollup-plugin-import-trace';
 import { dtsExtensions } from '../utils/dts-extensions.js';
-import { DtsrollBuildError } from '../types.js';
 import { createExternalizePlugin } from './plugins/externalize.js';
-import { createImportChainPlugin } from './plugins/import-chain.js';
 import { removeBundledModulesPlugin } from './plugins/remove-bundled-modules.js';
 import { resolveSubpathImportsPlugin } from './plugins/resolve-subpath-imports.js';
 
@@ -38,8 +37,6 @@ export const build = async (
 		getPackageEntryPoint,
 	} = createExternalizePlugin(externals);
 
-	const { plugin: importChainPlugin, getImportChain } = createImportChainPlugin();
-
 	const sizeRef: { value?: number } = {};
 	const rollupConfig = {
 		input: createInputMap(input, outputDirectory),
@@ -52,7 +49,7 @@ export const build = async (
 		},
 
 		plugins: [
-			importChainPlugin,
+			importTrace(),
 			externalizePlugin,
 			removeBundledModulesPlugin(outputDirectory, sizeRef),
 			resolveSubpathImportsPlugin(),
@@ -75,26 +72,15 @@ export const build = async (
 		],
 	} satisfies RollupOptions;
 
-	try {
-		const rollupBuild = await rollup(rollupConfig);
-		const built = await rollupBuild[mode](rollupConfig.output);
+	const rollupBuild = await rollup(rollupConfig);
+	const built = await rollupBuild[mode](rollupConfig.output);
 
-		await rollupBuild.close();
+	await rollupBuild.close();
 
-		return {
-			built,
-			externalized,
-			getPackageEntryPoint,
-			sourceSize: sizeRef.value ?? 0,
-		};
-	} catch (error) {
-		if (error instanceof Error && 'id' in error && typeof error.id === 'string') {
-			throw new DtsrollBuildError(
-				error.message,
-				error.id,
-				getImportChain(error.id),
-			);
-		}
-		throw error;
-	}
+	return {
+		built,
+		externalized,
+		getPackageEntryPoint,
+		sourceSize: sizeRef.value ?? 0,
+	};
 };
