@@ -73,8 +73,8 @@ importers:
         specifier: ^2.21.5
         version: 2.21.5(typescript@5.9.3)
       rollup-plugin-dts:
-        specifier: github:privatenumber/rollup-plugin-dts#npm/fix/sourcemap-ts-input
-        version: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/74d74f182926b4155713a44106cb91c944e3d964(rollup@4.56.0)(typescript@5.9.3)
+        specifier: github:privatenumber/rollup-plugin-dts#npm/master
+        version: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/0f5d7db6aae97a91f686307b47baf0d05171c069(rollup@4.56.0)(typescript@5.9.3)
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -95,10 +95,6 @@ packages:
 
   '@altano/repository-tools@2.0.1':
     resolution: {integrity: sha512-YE/52CkFtb+YtHPgbWPai7oo5N9AKnMuP5LM+i2AG7G1H2jdYBCO1iDnkDE3dZ3C1MIgckaF+d5PNRulgt0bdw==}
-
-  '@babel/code-frame@7.27.1':
-    resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
-    engines: {node: '>=6.9.0'}
 
   '@babel/code-frame@7.28.6':
     resolution: {integrity: sha512-JYgintcMjRiCvS8mMECzaEn+m3PfoQiyqukOMCCVQtoJGYJw8j/8LBJEiqkHLkfwCcs74E3pbAUFNg7d9VNJ+Q==}
@@ -2635,8 +2631,8 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/74d74f182926b4155713a44106cb91c944e3d964:
-    resolution: {tarball: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/74d74f182926b4155713a44106cb91c944e3d964}
+  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/0f5d7db6aae97a91f686307b47baf0d05171c069:
+    resolution: {tarball: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/0f5d7db6aae97a91f686307b47baf0d05171c069}
     version: 6.3.0
     engines: {node: '>=16'}
     peerDependencies:
@@ -3117,12 +3113,6 @@ packages:
 snapshots:
 
   '@altano/repository-tools@2.0.1': {}
-
-  '@babel/code-frame@7.27.1':
-    dependencies:
-      '@babel/helper-validator-identifier': 7.28.5
-      js-tokens: 4.0.0
-      picocolors: 1.1.1
 
   '@babel/code-frame@7.28.6':
     dependencies:
@@ -5225,7 +5215,7 @@ snapshots:
 
   jest-message-util@30.2.0:
     dependencies:
-      '@babel/code-frame': 7.27.1
+      '@babel/code-frame': 7.28.6
       '@jest/types': 30.2.0
       '@types/stack-utils': 2.0.3
       chalk: 4.1.2
@@ -5980,7 +5970,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/74d74f182926b4155713a44106cb91c944e3d964(rollup@4.56.0)(typescript@5.9.3):
+  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/0f5d7db6aae97a91f686307b47baf0d05171c069(rollup@4.56.0)(typescript@5.9.3):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
