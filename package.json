@@ -53,7 +53,7 @@
 		"empathic": "^2.0.0",
 		"resolve-pkg-maps": "^1.0.0",
 		"rollup": "^4.55.3",
-		"rollup-plugin-import-trace": "github:privatenumber/rollup-plugin-import-trace#npm/develop"
+		"rollup-plugin-import-trace": "^1.0.0"
 	},
 	"peerDependencies": {
 		"typescript": "^4.5 || ^5.0",

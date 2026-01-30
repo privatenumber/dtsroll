@@ -30,8 +30,8 @@ importers:
         specifier: ^4.55.3
         version: 4.56.0
       rollup-plugin-import-trace:
-        specifier: github:privatenumber/rollup-plugin-import-trace#npm/develop
-        version: git+https://git@github.com:privatenumber/rollup-plugin-import-trace.git#9a14076424b56eff484d15a3cc30dbd616e615f4(rollup@4.56.0)(vite@7.3.1(@types/node@25.0.10)(tsx@4.21.0)(yaml@2.8.2))
+        specifier: ^1.0.0
+        version: 1.0.0(rollup@4.56.0)(vite@7.3.1(@types/node@25.0.10)(tsx@4.21.0)(yaml@2.8.2))
     devDependencies:
       '@jridgewell/trace-mapping':
         specifier: ^0.3.31
@@ -2643,14 +2643,15 @@ packages:
       rollup: ^3.29.4 || ^4
       typescript: ^4.5 || ^5.0
 
-  rollup-plugin-import-trace@git+https://git@github.com:privatenumber/rollup-plugin-import-trace.git#9a14076424b56eff484d15a3cc30dbd616e615f4:
-    resolution: {commit: 9a14076424b56eff484d15a3cc30dbd616e615f4, repo: git@github.com:privatenumber/rollup-plugin-import-trace.git, type: git}
-    version: 0.0.0-semantic-release
-    engines: {node: '>=18'}
+  rollup-plugin-import-trace@1.0.0:
+    resolution: {integrity: sha512-byUjwhEc42qnbcTOZ7E0cDDNidkKkN4VwoW5dknA/61F0c60v2l2ktPraUH4+ehhZ/L/yS/Exry/q8gz0hEZOQ==}
+    engines: {node: '>=20.20.0'}
     peerDependencies:
       rollup: ^3.0.0 || ^4.0.0
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0
     peerDependenciesMeta:
+      rollup:
+        optional: true
       vite:
         optional: true
 
@@ -5990,10 +5991,9 @@ snapshots:
     optionalDependencies:
       '@babel/code-frame': 7.28.6
 
-  rollup-plugin-import-trace@git+https://git@github.com:privatenumber/rollup-plugin-import-trace.git#9a14076424b56eff484d15a3cc30dbd616e615f4(rollup@4.56.0)(vite@7.3.1(@types/node@25.0.10)(tsx@4.21.0)(yaml@2.8.2)):
-    dependencies:
-      rollup: 4.56.0
+  rollup-plugin-import-trace@1.0.0(rollup@4.56.0)(vite@7.3.1(@types/node@25.0.10)(tsx@4.21.0)(yaml@2.8.2)):
     optionalDependencies:
+      rollup: 4.56.0
       vite: 7.3.1(@types/node@25.0.10)(tsx@4.21.0)(yaml@2.8.2)
 
   rollup-pluginutils@2.8.2:
