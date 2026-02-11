@@ -61,8 +61,8 @@ importers:
         specifier: ^1.28.1
         version: 1.28.1(@types/estree@1.0.8)(@typescript-eslint/utils@8.53.1(eslint@9.39.2)(typescript@5.9.3))(jsonc-eslint-parser@2.4.2)(typescript@5.9.3)
       manten:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^2.0.0-beta.1
+        version: 2.0.0-beta.1
       nano-spawn:
         specifier: ^2.0.0
         version: 2.0.0
@@ -2228,8 +2228,9 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  manten@1.10.0:
-    resolution: {integrity: sha512-YcapOHCdvi+Cm6qlxFBTCw/X3WfGahLCBo/OM8Ot3CK7QyT/rZtouDuVbbnkHhgX0g6ZkGMpjKPs0UsL5rWSAQ==}
+  manten@2.0.0-beta.1:
+    resolution: {integrity: sha512-7JosaWZyxlh99K0Fg89IUhUAe9m+jWfNRxZeBoWO2930yhF/pq0bEuLGozuBLpbJQ5OavX8fLBiDWMyVsF3fFw==}
+    engines: {node: '>=20.20.0'}
 
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
@@ -5374,7 +5375,7 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  manten@1.10.0:
+  manten@2.0.0-beta.1:
     dependencies:
       expect: 30.2.0
 
