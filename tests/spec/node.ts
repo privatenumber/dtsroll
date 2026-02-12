@@ -1227,6 +1227,71 @@ export type { ConsumerProps } from './Consumer.js';
 			expect(outputMap.sources.some(s => s?.includes('src/index.ts'))).toBe(true);
 		});
 
+		test('strips intermediate sourceMappingURL comments from bundled devDependencies', async () => {
+			// When a devDependency's .d.ts has a `declare global` block AND a
+			// sourceMappingURL comment, the comment leaks into the bundled output.
+			//
+			// The `declare global` block causes rollup-plugin-dts to preserve
+			// the module's side effects, which includes the trailing comment.
+			// Without `declare global`, the comment gets stripped normally.
+			await using fixture = await createFixture({
+				'package.json': JSON.stringify({
+					devDependencies: {
+						'dev-dep': '*',
+					},
+				}),
+				node_modules: {
+					'dev-dep': {
+						'package.json': JSON.stringify({
+							types: 'dist/index.d.ts',
+						}),
+						dist: {
+							'index.d.ts': outdent`
+								declare global {
+									interface Window {
+										__ENVIRONMENT__: Environment;
+									}
+								}
+								declare enum Environment {
+									Development = "development",
+									Production = "production"
+								}
+								declare function getEnvironment(): Environment;
+
+								export { Environment, getEnvironment };
+								//# sourceMappingURL=index.d.ts.map
+							`,
+						},
+					},
+				},
+				dist: {
+					'index.d.ts': outdent`
+						import { Environment } from 'dev-dep';
+						export declare const env: Environment;
+						export type { Environment };
+					`,
+				},
+			});
+
+			const generated = await dtsroll({
+				cwd: fixture.path,
+				inputs: [fixture.getPath('dist/index.d.ts')],
+				sourcemap: true,
+			});
+
+			expect('error' in generated).toBe(false);
+
+			const output = await fixture.readFile('dist/index.d.ts', 'utf8');
+			const sourceMappingMatches = output.match(/\/\/# sourceMappingURL=/g) || [];
+
+			onTestFail(() => {
+				console.log('Output:', output);
+			});
+
+			// Should have at most 1 sourceMappingURL comment (the final one)
+			expect(sourceMappingMatches.length).toBeLessThanOrEqual(1);
+		});
+
 		test('file:// URL sources pass through unchanged', async () => {
 			// TypeScript can emit file:// URLs in sources
 			// They should pass through without being mangled by path functions
