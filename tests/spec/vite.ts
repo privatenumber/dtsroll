@@ -7,6 +7,37 @@ import { TraceMap, originalPositionFor } from '@jridgewell/trace-mapping';
 import { dtsroll } from '#dtsroll/vite';
 
 describe('vite plugin', () => {
+	test('throws when no dts inputs are found', async () => {
+		await using fixture = await createFixture({
+			'package.json': JSON.stringify({
+				types: './dist/entry.d.ts',
+			}),
+			src: {
+				'entry.ts': 'export const a = 1;',
+			},
+			'tsconfig.json': JSON.stringify({
+				includes: ['src'],
+			}),
+		});
+
+		// No vite-plugin-dts, so no .d.ts files are generated
+		await expect(
+			build({
+				root: fixture.path,
+				logLevel: 'silent',
+				build: {
+					lib: {
+						entry: fixture.getPath('src/entry.ts'),
+						formats: ['es'],
+					},
+				},
+				plugins: [
+					dtsroll(),
+				],
+			}),
+		).rejects.toThrow('No input files');
+	});
+
 	test('auto-detects inputs from package.json', async () => {
 		await using fixture = await createFixture({
 			'package.json': JSON.stringify({

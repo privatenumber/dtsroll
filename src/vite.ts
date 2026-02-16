@@ -40,6 +40,10 @@ const dtsrollPlugin = (
 
 					built = true;
 
+					if ('error' in output) {
+						throw new Error(output.error);
+					}
+
 					if (!noLog) {
 						logOutput(output);
 
