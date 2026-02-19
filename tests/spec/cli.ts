@@ -70,8 +70,8 @@ describe('cli', () => {
 			const spawned = await dtsroll(fixture.path, ['dist/entry.d.ts']);
 			expect('exitCode' in spawned && spawned.exitCode === 1).toBe(true);
 
-			const entryPath = path.join(fixture.path, 'dist/entry.d.ts');
-			const invalidPath = path.join(fixture.path, 'dist/invalid.d.ts');
+			const entryPath = path.join(fixture.path, 'dist/entry.d.ts').replaceAll('\\', '/');
+			const invalidPath = path.join(fixture.path, 'dist/invalid.d.ts').replaceAll('\\', '/');
 			expect(spawned.stderr).toBe(`
 Failed to build
 
