@@ -5,10 +5,10 @@ import {
 import { createFixture } from 'fs-fixture';
 import outdent from 'outdent';
 import { TraceMap, originalPositionFor } from '@jridgewell/trace-mapping';
+import { dtsroll } from '#dtsroll';
 import { readSourceMap } from '../utils/read-sourcemap.js';
 import * as fixtures from '../fixtures.js';
 import { tsc } from '../utils/tsc.js';
-import { dtsroll } from '#dtsroll';
 
 describe('node', () => {
 	test('Single entry-point', async () => {
@@ -1324,5 +1324,44 @@ export type { ConsumerProps } from './Consumer.js';
 			const hasFileUrl = outputMap.sources.some(s => s?.startsWith('file://'));
 			expect(hasFileUrl).toBe(true);
 		});
+	});
+
+	test('declare global should not be treated as an exported binding', async () => {
+		await using fixture = await createFixture({
+			dist: {
+				'index.d.ts': outdent`
+				export { getConfig, resetConfig } from './client.js';
+				`,
+				'client.d.ts': outdent`
+				import type { Config } from './types.js';
+				declare global {
+				    interface Window {
+				        __APP_CONFIG__?: Config;
+				    }
+				}
+				export declare function getConfig(): Config | undefined;
+				export declare function resetConfig(): void;
+				`,
+				'types.d.ts': outdent`
+				export interface Config {
+				    locale: string;
+				    debug: boolean;
+				}
+				`,
+			},
+		});
+
+		const generated = await dtsroll({
+			inputs: [fixture.getPath('dist/index.d.ts')],
+		});
+
+		expect('error' in generated).toBe(false);
+		if ('error' in generated) {
+			return;
+		}
+
+		const content = await fixture.readFile('dist/index.d.ts', 'utf8');
+		expect(content).toContain('declare global');
+		expect(content).not.toContain('export { global');
 	});
 });
