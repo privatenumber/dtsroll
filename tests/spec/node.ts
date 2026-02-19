@@ -5,10 +5,10 @@ import {
 import { createFixture } from 'fs-fixture';
 import outdent from 'outdent';
 import { TraceMap, originalPositionFor } from '@jridgewell/trace-mapping';
+import { dtsroll } from '#dtsroll';
 import { readSourceMap } from '../utils/read-sourcemap.js';
 import * as fixtures from '../fixtures.js';
 import { tsc } from '../utils/tsc.js';
-import { dtsroll } from '#dtsroll';
 
 describe('node', () => {
 	test('Single entry-point', async () => {
