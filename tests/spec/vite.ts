@@ -38,6 +38,17 @@ describe('vite plugin', () => {
 		).rejects.toThrow('No input files');
 	});
 
+	/**
+	 * The dtsroll plugin must use configResolved (not config) to
+	 * read root, because the config hook receives raw user config
+	 * where root may be undefined.
+	 */
+	test('uses configResolved hook to read root', () => {
+		const plugin = dtsroll();
+		expect(plugin).not.toHaveProperty('config');
+		expect(plugin).toHaveProperty('configResolved');
+	});
+
 	test('auto-detects inputs from package.json', async () => {
 		await using fixture = await createFixture({
 			'package.json': JSON.stringify({
