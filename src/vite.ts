@@ -19,7 +19,7 @@ const dtsrollPlugin = (
 		name: 'dtsroll',
 		apply: 'build',
 		enforce: 'post',
-		config: ({ root, logLevel }) => {
+		configResolved: ({ root, logLevel }) => {
 			cwd = root;
 			noLog = logLevel === 'silent';
 		},
