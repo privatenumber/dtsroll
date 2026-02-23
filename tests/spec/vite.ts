@@ -93,6 +93,7 @@ describe('vite plugin', () => {
 					tsconfigPath: fixture.getPath('tsconfig.json'),
 				}),
 				dtsroll(),
+
 				/**
 				 * Sets root after dtsroll in the same enforce: 'post' group.
 				 * Config hooks within an enforce tier run in array order, so
