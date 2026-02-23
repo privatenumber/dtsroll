@@ -39,17 +39,6 @@ describe('vite plugin', () => {
 	});
 
 	/**
-	 * The dtsroll plugin must use configResolved (not config) to
-	 * read root, because the config hook receives raw user config
-	 * where root may be undefined.
-	 */
-	test('uses configResolved hook to read root', () => {
-		const plugin = dtsroll();
-		expect(plugin).not.toHaveProperty('config');
-		expect(plugin).toHaveProperty('configResolved');
-	});
-
-	/**
 	 * Regression test: root must come from configResolved, not config hook.
 	 *
 	 * In monorepo setups, root may be set by a framework plugin (e.g. nx)
