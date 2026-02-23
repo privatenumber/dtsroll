@@ -41,6 +41,12 @@ describe('vite plugin', () => {
 	/**
 	 * Regression test: root must come from configResolved, not config hook.
 	 *
+	 * The `config` hook receives UserConfig (raw/unresolved), where `root`
+	 * may be undefined if not explicitly set. The `configResolved` hook
+	 * receives ResolvedConfig, where `root` is always resolved.
+	 * https://vite.dev/guide/api-plugin.html#config
+	 * https://vite.dev/guide/api-plugin.html#configresolved
+	 *
 	 * In monorepo setups, root may be set by a framework plugin (e.g. nx)
 	 * that runs after dtsroll in the enforce: 'post' group. The config
 	 * hook processes plugins sequentially within each enforce tier, so
