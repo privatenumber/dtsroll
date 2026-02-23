@@ -49,6 +49,68 @@ describe('vite plugin', () => {
 		expect(plugin).toHaveProperty('configResolved');
 	});
 
+	/**
+	 * Regression test: root must come from configResolved, not config hook.
+	 *
+	 * In monorepo setups, root may be set by a framework plugin (e.g. nx)
+	 * that runs after dtsroll in the enforce: 'post' group. The config
+	 * hook processes plugins sequentially within each enforce tier, so
+	 * dtsroll's config hook would see root=undefined if it runs first.
+	 * configResolved always sees the final resolved root.
+	 *
+	 * With old code (config hook): cwd=undefined → falls back to
+	 * process.cwd() (wrong directory) → reads wrong package.json.
+	 * With fix (configResolved): cwd=fixture root → correct.
+	 */
+	test('resolves root from configResolved (not config hook)', async () => {
+		await using fixture = await createFixture({
+			'package.json': JSON.stringify({
+				types: './dist/entry.d.ts',
+			}),
+			src: {
+				'entry.ts': `
+				import type { A } from './types.js';
+				export const a: A = 1;
+				`,
+				'types.ts': 'export type A = number;',
+			},
+			'tsconfig.json': JSON.stringify({
+				includes: ['src'],
+			}),
+		});
+
+		await build({
+			// Deliberately NOT setting root in inline config
+			logLevel: 'silent',
+			build: {
+				lib: {
+					entry: fixture.getPath('src/entry.ts'),
+					formats: ['es'],
+				},
+			},
+			plugins: [
+				dts({
+					tsconfigPath: fixture.getPath('tsconfig.json'),
+				}),
+				dtsroll(),
+				/**
+				 * Sets root after dtsroll in the same enforce: 'post' group.
+				 * Config hooks within an enforce tier run in array order, so
+				 * dtsroll's old config hook would have already captured
+				 * root=undefined before this plugin sets it.
+				 */
+				{
+					name: 'late-root-setter',
+					enforce: 'post' as const,
+					config: () => ({ root: fixture.path }),
+				},
+			],
+		});
+
+		const bundled = await fixture.readFile('dist/entry.d.ts', 'utf8');
+		expect(bundled).toMatch('type A = number;');
+	});
+
 	test('auto-detects inputs from package.json', async () => {
 		await using fixture = await createFixture({
 			'package.json': JSON.stringify({
