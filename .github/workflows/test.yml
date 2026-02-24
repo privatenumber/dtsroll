@@ -11,6 +11,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        typescript-version:
+          - typescript4
+          - typescript5
+          - typescript6
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
@@ -29,12 +33,18 @@ jobs:
           run_install: true
 
       - name: Lint
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.typescript-version == 'typescript5' }}
         run: pnpm lint
 
       - name: Type check
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.typescript-version == 'typescript5' }}
         run: pnpm type-check
 
+      - name: Build
+        run: pnpm build
+
       - name: Test
-        run: pnpm test
+        run: tsx --loader alias-imports --conditions ${{ matrix.typescript-version }} tests/index.ts
+        env:
+          TS_CONDITION: ${{ matrix.typescript-version }}
+          NODE_NO_WARNINGS: '1'
