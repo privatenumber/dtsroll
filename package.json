@@ -81,7 +81,10 @@
 		"pkgroll": "^2.21.5",
 		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/master",
 		"type-fest": "^5.4.1",
-		"typescript": "6.0.0-beta",
+		"typescript": "^5.9.3",
+		"typescript4": "npm:typescript@^4.5",
+		"typescript5": "npm:typescript@^5.0",
+		"typescript6": "npm:typescript@beta",
 		"vite": "^7.3.1",
 		"vite-plugin-dts": "5.0.0-beta.6"
 	}
