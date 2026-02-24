@@ -46,5 +46,4 @@ jobs:
       - name: Test
         run: tsx --loader alias-imports --conditions ${{ matrix.typescript-version }} tests/index.ts
         env:
-          TS_CONDITION: ${{ matrix.typescript-version }}
           NODE_NO_WARNINGS: '1'
