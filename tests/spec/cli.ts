@@ -3,6 +3,7 @@ import path from 'node:path';
 import {
 	describe, test, expect, onTestFail,
 } from 'manten';
+import outdent from 'outdent';
 import { createFixture } from 'fs-fixture';
 import * as fixtures from '../fixtures.ts';
 import { dtsroll } from '../utils/dtsroll.ts';
@@ -463,6 +464,31 @@ describe('cli', () => {
 				expect(entry).not.toContain('\'some-pkg\'');
 			});
 		});
+	});
+
+	test('JS file does not shadow .d.ts directory', async () => {
+		await using fixture = await createFixture({
+			'package.json': JSON.stringify({
+				exports: {
+					types: './dist/index.d.ts',
+				},
+			}),
+			dist: {
+				'index.d.ts': outdent`
+				import { Bar } from './utils';
+				export type Foo = Bar;
+				`,
+				'utils.js': 'export {};',
+				'utils/index.d.ts': 'export type Bar = string;',
+			},
+		});
+
+		const spawned = await dtsroll(fixture.path, []);
+		onTestFail(() => console.log(spawned));
+		expect('exitCode' in spawned).toBe(false);
+
+		const entry = await fixture.readFile('dist/index.d.ts', 'utf8');
+		expect(entry).toContain('Bar = string');
 	});
 
 	test('Chunk names dont collide', async () => {
