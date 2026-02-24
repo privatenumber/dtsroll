@@ -23,7 +23,8 @@ describe('vite plugin', () => {
 				'entry.ts': 'export const a = 1;',
 			},
 			'tsconfig.json': JSON.stringify({
-				includes: ['src'],
+				compilerOptions: { rootDir: 'src' },
+				include: ['src'],
 			}),
 		});
 
@@ -77,7 +78,8 @@ describe('vite plugin', () => {
 				'types.ts': 'export type A = number;',
 			},
 			'tsconfig.json': JSON.stringify({
-				includes: ['src'],
+				compilerOptions: { rootDir: 'src' },
+				include: ['src'],
 			}),
 		});
 
@@ -127,7 +129,8 @@ describe('vite plugin', () => {
 				'types.ts': 'export type A = number;',
 			},
 			'tsconfig.json': JSON.stringify({
-				includes: ['src'],
+				compilerOptions: { rootDir: 'src' },
+				include: ['src'],
 			}),
 		});
 
@@ -162,7 +165,8 @@ describe('vite plugin', () => {
 				'types.ts': 'export type A = number;',
 			},
 			'tsconfig.json': JSON.stringify({
-				includes: ['src'],
+				compilerOptions: { rootDir: 'src' },
+				include: ['src'],
 			}),
 		});
 
@@ -215,7 +219,8 @@ describe('vite plugin', () => {
 				'types.ts': 'export type A = number;',
 			},
 			'tsconfig.json': JSON.stringify({
-				includes: ['src'],
+				compilerOptions: { rootDir: 'src' },
+				include: ['src'],
 			}),
 		});
 
@@ -252,7 +257,8 @@ describe('vite plugin', () => {
 				'types.ts': 'export type A = number;',
 			},
 			'tsconfig.json': JSON.stringify({
-				includes: ['src'],
+				compilerOptions: { rootDir: 'src' },
+				include: ['src'],
 			}),
 		});
 
@@ -295,6 +301,7 @@ describe('vite plugin', () => {
 			},
 			'tsconfig.json': JSON.stringify({
 				compilerOptions: {
+					rootDir: 'src',
 					declaration: true,
 					declarationMap: true,
 				},
