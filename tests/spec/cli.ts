@@ -75,7 +75,7 @@ describe('cli', () => {
 			const invalidPath = path.join(fixture.path, 'dist/invalid.d.ts').replaceAll('\\', '/');
 			expect(spawned.stderr).toContain('Failed to build');
 			expect(spawned.stderr).toContain('Syntax not yet supported');
-			expect(spawned.stderr).toContain(`Import trace:`);
+			expect(spawned.stderr).toContain('Import trace:');
 			expect(spawned.stderr).toContain(entryPath);
 			expect(spawned.stderr).toContain(invalidPath);
 		});
