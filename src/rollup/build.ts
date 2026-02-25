@@ -2,6 +2,7 @@ import { rollup, type RollupOptions } from 'rollup';
 import { dts } from 'rollup-plugin-dts';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import { importTrace } from 'rollup-plugin-import-trace';
+import ts from 'typescript';
 import { dtsExtensions } from '../utils/dts-extensions.ts';
 import { createExternalizePlugin } from './plugins/externalize.ts';
 import { removeBundledModulesPlugin } from './plugins/remove-bundled-modules.ts';
@@ -60,14 +61,18 @@ export const build = async (
 			dts({
 				respectExternal: true,
 				sourcemap,
-
-				/**
-				 * Setting a tsconfig or compilerOptions shouldn't be necessary since
-				 * we're dealing with pre-compiled d.ts files
-				 *
-				 * But may be something we need to support if we want to support
-				 * aliases in the future
-				 */
+				compilerOptions: {
+					/**
+					 * TS6 changed the default moduleResolution from node10 to bundler.
+					 * rollup-plugin-dts uses ts.resolveModuleName with whatever compilerOptions
+					 * are passed, and bundler resolution picks .js files over directories
+					 * containing .d.ts files (e.g. utils.js over utils/index.d.ts).
+					 *
+					 * Since dtsroll operates on compiled .d.ts output, node10 resolution
+					 * is correct: it prioritizes .d.ts files and directory index lookups.
+					 */
+					moduleResolution: ts.ModuleResolutionKind.Node10,
+				},
 			}),
 		],
 	} satisfies RollupOptions;
