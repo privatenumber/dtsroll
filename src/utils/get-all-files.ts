@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { normalizePath } from './path-utils.js';
+import { normalizePath } from './path-utils.ts';
 
 export const getAllFiles = async (
 	directoryPath: string,

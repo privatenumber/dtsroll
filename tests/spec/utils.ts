@@ -2,10 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, test, expect } from 'manten';
 import { createFixture } from 'fs-fixture';
-import { getCommonDirectory } from '../../src/utils/get-common-directory.js';
-import { propertyNeedsQuotes } from '../../src/utils/property-needs-quotes.js';
-import { getPackageJson } from '../../src/utils/package-json.js';
-import { getAllFiles } from '../../src/utils/get-all-files.js';
+import { getCommonDirectory } from '../../src/utils/get-common-directory.ts';
+import { propertyNeedsQuotes } from '../../src/utils/property-needs-quotes.ts';
+import { getPackageJson } from '../../src/utils/package-json.ts';
+import { getAllFiles } from '../../src/utils/get-all-files.ts';
 
 describe('utils', () => {
 	describe('getCommonDirectory', () => {

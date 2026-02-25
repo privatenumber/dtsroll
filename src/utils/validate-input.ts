@@ -1,6 +1,6 @@
-import type { ValidatedInput } from '../types.js';
-import { pathExists } from './path-exists.js';
-import { isDts } from './dts-extensions.js';
+import type { ValidatedInput } from '../types.ts';
+import { pathExists } from './path-exists.ts';
+import { isDts } from './dts-extensions.ts';
 
 export const validateInput = async (
 	inputFiles: string[] | Record<string, string> | undefined,

@@ -18,6 +18,7 @@
 	"files": [
 		"dist"
 	],
+	"type": "module",
 	"bin": "./dist/cli.mjs",
 	"exports": {
 		".": {
@@ -36,8 +37,8 @@
 	"packageManager": "pnpm@10.14.0",
 	"scripts": {
 		"build": "pkgroll",
-		"test": "pnpm build && tsx tests/index.ts",
-		"dev": "tsx watch tests/index.ts",
+		"test": "pnpm build && node tests/index.ts",
+		"dev": "node --watch tests/index.ts",
 		"lint": "lintroll --cache --node --ignore-pattern tests/fixture-package .",
 		"type-check": "tsc",
 		"prepack": "pnpm build && clean-pkg-json"
@@ -79,7 +80,6 @@
 		"outdent": "^0.8.0",
 		"pkgroll": "^2.21.5",
 		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/master",
-		"tsx": "^4.21.0",
 		"type-fest": "^5.4.1",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",

@@ -4,8 +4,8 @@ import {
 	describe, test, expect, onTestFail,
 } from 'manten';
 import { createFixture } from 'fs-fixture';
-import * as fixtures from '../fixtures.js';
-import { dtsroll } from '../utils/dtsroll.js';
+import * as fixtures from '../fixtures.ts';
+import { dtsroll } from '../utils/dtsroll.ts';
 
 describe('cli', () => {
 	describe('errors', () => {
@@ -77,9 +77,7 @@ Failed to build
 
 Syntax not yet supported
 
-> 1 | 'use strict';
-    | ^^^^^^^^^^^^^
-  2 | declare var foo = require('foo');
+1:1: \`'use strict';\`
 
 Import trace:
     ${entryPath}

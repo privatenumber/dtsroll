@@ -2,8 +2,8 @@ import byteSize from 'byte-size';
 import {
 	underline, dim, green, magenta, bold, yellow, lightYellow, red,
 } from 'kolorist';
-import type { Output, DtsrollOutput } from '../types.js';
-import { getDisplayPath } from './path-utils.js';
+import type { Output, DtsrollOutput } from '../types.ts';
+import { getDisplayPath } from './path-utils.ts';
 
 const warningSignUnicode = '\u26A0';
 
