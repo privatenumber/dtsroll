@@ -1,7 +1,7 @@
 import { describe } from 'manten';
 import ts from 'typescript';
 
-describe(`dtsroll using TypeScript ${ts.version}`, async () => {
+describe(`dtsroll using TypeScript v${ts.version}`, async () => {
 	await import('./spec/utils.ts');
 	await import('./spec/cli.ts');
 	await import('./spec/node.ts');

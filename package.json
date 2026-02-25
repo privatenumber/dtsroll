@@ -38,12 +38,6 @@
 			"typescript5": "typescript5",
 			"typescript6": "typescript6",
 			"default": "typescript"
-		},
-		"typescript/*": {
-			"typescript4": "typescript4/*",
-			"typescript5": "typescript5/*",
-			"typescript6": "typescript6/*",
-			"default": "typescript/*"
 		}
 	},
 	"packageManager": "pnpm@10.14.0",
