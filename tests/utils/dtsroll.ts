@@ -19,7 +19,7 @@ const getInheritedNodeArgs = () => {
 			args.push('--loader', pathToFileURL(require.resolve('alias-imports')).href);
 			i += 1;
 		} else if (execArgv[i] === '--conditions' && execArgv[i + 1]?.startsWith('typescript')) {
-			args.push(execArgv[i], execArgv[i + 1]);
+			args.push(execArgv[i]!, execArgv[i + 1]!);
 			i += 1;
 		}
 	}
