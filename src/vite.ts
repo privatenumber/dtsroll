@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite';
-import { logOutput } from './utils/log-output.js';
-import { dtsroll, type Options } from './index.js';
+import { logOutput } from './utils/log-output.ts';
+import { dtsroll, type Options } from './index.ts';
 
 /**
  * Vite plugin for bundling TypeScript declaration files.

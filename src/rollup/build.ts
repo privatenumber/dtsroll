@@ -2,10 +2,10 @@ import { rollup, type RollupOptions } from 'rollup';
 import { dts } from 'rollup-plugin-dts';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import { importTrace } from 'rollup-plugin-import-trace';
-import { dtsExtensions } from '../utils/dts-extensions.js';
-import { createExternalizePlugin } from './plugins/externalize.js';
-import { removeBundledModulesPlugin } from './plugins/remove-bundled-modules.js';
-import { resolveSubpathImportsPlugin } from './plugins/resolve-subpath-imports.js';
+import { dtsExtensions } from '../utils/dts-extensions.ts';
+import { createExternalizePlugin } from './plugins/externalize.ts';
+import { removeBundledModulesPlugin } from './plugins/remove-bundled-modules.ts';
+import { resolveSubpathImportsPlugin } from './plugins/resolve-subpath-imports.ts';
 
 /**
  * Input array is converted to an object because rollup-plugin-dts has a bug

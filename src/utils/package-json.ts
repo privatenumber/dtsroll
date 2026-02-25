@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { PackageJson } from 'type-fest';
-import { isDts } from './dts-extensions.js';
-import { propertyNeedsQuotes } from './property-needs-quotes.js';
-import { pathExists } from './path-exists.js';
-import { typesPrefix, getOriginalPackageName } from './package-name.js';
-import { getAllFiles } from './get-all-files.js';
+import { isDts } from './dts-extensions.ts';
+import { propertyNeedsQuotes } from './property-needs-quotes.ts';
+import { pathExists } from './path-exists.ts';
+import { typesPrefix, getOriginalPackageName } from './package-name.ts';
+import { getAllFiles } from './get-all-files.ts';
 
 const readPackageJson = async (
 	filePath: string,

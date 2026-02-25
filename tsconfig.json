@@ -4,11 +4,13 @@
 		"target": "ES2022",
 		"module": "Preserve",
 		"resolveJsonModule": true,
+		"allowImportingTsExtensions": true,
 		"strict": true,
 		"noUncheckedIndexedAccess": true,
 		"noEmit": true,
 		"esModuleInterop": true,
 		"verbatimModuleSyntax": true,
+		"erasableSyntaxOnly": true,
 		"skipLibCheck": true,
 	},
 }

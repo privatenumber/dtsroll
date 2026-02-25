@@ -1,8 +1,8 @@
 import { describe } from 'manten';
 
 describe('dtsroll', async () => {
-	await import('./spec/utils.js');
-	await import('./spec/cli.js');
-	await import('./spec/node.js');
-	await import('./spec/vite.js');
+	await import('./spec/utils.ts');
+	await import('./spec/cli.ts');
+	await import('./spec/node.ts');
+	await import('./spec/vite.ts');
 });

@@ -2,8 +2,8 @@ import { cli } from 'cleye';
 import { bgYellow, black } from 'kolorist';
 import { patchErrorWithTrace } from 'rollup-plugin-import-trace';
 import { name, version, description } from '../package.json';
-import { logOutput } from './utils/log-output.js';
-import { dtsroll } from './index.js';
+import { logOutput } from './utils/log-output.ts';
+import { dtsroll } from './index.ts';
 
 const argv = cli({
 	name,

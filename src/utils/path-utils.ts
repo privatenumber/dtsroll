@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { cwd } from './cwd.js';
+import { cwd } from './cwd.ts';
 
 export const isPath = (
 	filePath: string,

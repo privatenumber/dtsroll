@@ -6,9 +6,9 @@ import { createFixture } from 'fs-fixture';
 import outdent from 'outdent';
 import { TraceMap, originalPositionFor } from '@jridgewell/trace-mapping';
 import { dtsroll } from '#dtsroll';
-import { readSourceMap } from '../utils/read-sourcemap.js';
-import * as fixtures from '../fixtures.js';
-import { tsc } from '../utils/tsc.js';
+import { readSourceMap } from '../utils/read-sourcemap.ts';
+import * as fixtures from '../fixtures.ts';
+import { tsc } from '../utils/tsc.ts';
 
 describe('node', () => {
 	test('Single entry-point', async () => {
