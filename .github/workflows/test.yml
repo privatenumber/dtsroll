@@ -41,15 +41,9 @@ jobs:
 
       - name: Test (TypeScript 4)
         run: node --import alias-imports --conditions typescript4 tests/index.ts
-        env:
-          NODE_NO_WARNINGS: "1"
 
       - name: Test (TypeScript 5)
         run: node --import alias-imports --conditions typescript5 tests/index.ts
-        env:
-          NODE_NO_WARNINGS: "1"
 
       - name: Test (TypeScript 6)
         run: node --import alias-imports --conditions typescript6 tests/index.ts
-        env:
-          NODE_NO_WARNINGS: "1"

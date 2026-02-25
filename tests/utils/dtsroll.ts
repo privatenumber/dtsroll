@@ -3,13 +3,20 @@ import nanoSpawn, { type SubprocessError } from 'nano-spawn';
 
 const dtsrollPath = path.resolve('./dist/cli.mjs');
 
+const execArgv = process.execArgv.map(arg => {
+	if (arg === 'alias-imports') {
+		return import.meta.resolve(arg);
+	}
+	return arg;
+});
+
 export const dtsroll = (
 	cwd: string,
 	args: string[],
 ) => nanoSpawn(
 	process.execPath,
 	[
-		...process.execArgv,
+		...execArgv,
 		dtsrollPath,
 		...args,
 	],
