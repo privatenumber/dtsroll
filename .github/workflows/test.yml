@@ -40,16 +40,16 @@ jobs:
         run: pnpm build
 
       - name: Test (TypeScript 4)
-        run: tsx --loader alias-imports --conditions typescript4 tests/index.ts
+        run: node --loader alias-imports --conditions typescript4 tests/index.ts
         env:
           NODE_NO_WARNINGS: "1"
 
       - name: Test (TypeScript 5)
-        run: tsx --loader alias-imports --conditions typescript5 tests/index.ts
+        run: node --loader alias-imports --conditions typescript5 tests/index.ts
         env:
           NODE_NO_WARNINGS: "1"
 
       - name: Test (TypeScript 6)
-        run: tsx --loader alias-imports --conditions typescript6 tests/index.ts
+        run: node --loader alias-imports --conditions typescript6 tests/index.ts
         env:
           NODE_NO_WARNINGS: "1"
