@@ -1,17 +1,10 @@
 import fs from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import { describe, test, expect } from 'manten';
 import { createFixture } from 'fs-fixture';
 import { build } from 'vite';
+import dts from 'unplugin-dts/vite';
 import { TraceMap, originalPositionFor } from '@jridgewell/trace-mapping';
 import { dtsroll } from '#dtsroll/vite';
-
-/**
- * Force CJS resolution to avoid broken extensionless ESM imports
- * in @microsoft/api-extractor (transitive dep of vite-plugin-dts)
- */
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-const dts = (createRequire(import.meta.url)('vite-plugin-dts') as typeof import('vite-plugin-dts')).default;
 
 describe('vite plugin', () => {
 	test('throws when no dts inputs are found', async () => {
@@ -29,7 +22,7 @@ describe('vite plugin', () => {
 			}),
 		});
 
-		// No vite-plugin-dts, so no .d.ts files are generated
+		// No unplugin-dts, so no .d.ts files are generated
 		await expect(
 			build({
 				root: fixture.path,

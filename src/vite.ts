@@ -4,7 +4,7 @@ import { dtsroll, type Options } from './index.ts';
 
 /**
  * Vite plugin for bundling TypeScript declaration files.
- * Runs after vite-plugin-dts in the writeBundle hook.
+ * Runs after unplugin-dts in the writeBundle hook.
  *
  * @param options - Configuration options (same as dtsroll function)
  * @returns Vite plugin instance
