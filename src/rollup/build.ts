@@ -60,14 +60,6 @@ export const build = async (
 			dts({
 				respectExternal: true,
 				sourcemap,
-
-				/**
-				 * Setting a tsconfig or compilerOptions shouldn't be necessary since
-				 * we're dealing with pre-compiled d.ts files
-				 *
-				 * But may be something we need to support if we want to support
-				 * aliases in the future
-				 */
 			}),
 		],
 	} satisfies RollupOptions;
