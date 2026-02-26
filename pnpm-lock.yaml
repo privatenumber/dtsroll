@@ -77,7 +77,7 @@ importers:
         version: 2.26.0(typescript@5.9.3)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
       rollup-plugin-dts:
         specifier: github:privatenumber/rollup-plugin-dts#npm/master
-        version: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/9fae29f79cbbe25d792516f578478a82fa7b5351(rollup@4.57.1)(typescript@5.9.3)
+        version: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/09653b867c006cc5a4c82c11903f1c3566a59c1c(rollup@4.57.1)(typescript@5.9.3)
       type-fest:
         specifier: ^5.4.1
         version: 5.4.4
@@ -2513,13 +2513,13 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/9fae29f79cbbe25d792516f578478a82fa7b5351:
-    resolution: {tarball: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/9fae29f79cbbe25d792516f578478a82fa7b5351}
+  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/09653b867c006cc5a4c82c11903f1c3566a59c1c:
+    resolution: {tarball: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/09653b867c006cc5a4c82c11903f1c3566a59c1c}
     version: 6.3.0
     engines: {node: '>=16'}
     peerDependencies:
       rollup: ^3.29.4 || ^4
-      typescript: ^4.5 || ^5.0
+      typescript: ^4.5 || ^5.0 || ^6.0
 
   rollup-plugin-import-trace@1.0.1:
     resolution: {integrity: sha512-dWOKrdYba2BXDJh82kkuM4pAR3M6r7WFp6vbVxAgvLfug2WniMFAg2uZ5sNQ/8CoQWo5l2N5EXDG8+QClKk1YQ==}
@@ -5705,7 +5705,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/9fae29f79cbbe25d792516f578478a82fa7b5351(rollup@4.57.1)(typescript@5.9.3):
+  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/09653b867c006cc5a4c82c11903f1c3566a59c1c(rollup@4.57.1)(typescript@5.9.3):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
