@@ -23,7 +23,7 @@ describe('vite plugin', () => {
 				'entry.ts': 'export const a = 1;',
 			},
 			// rootDir: TS6 defaults rootDir to '.' instead of inferring from source files
-				'tsconfig.json': JSON.stringify({
+			'tsconfig.json': JSON.stringify({
 				compilerOptions: { rootDir: 'src' },
 				include: ['src'],
 			}),
