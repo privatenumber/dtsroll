@@ -45,6 +45,9 @@ importers:
       '@types/node':
         specifier: ^25.0.10
         version: 25.2.3
+      alias-imports:
+        specifier: ^1.1.1
+        version: 1.1.1
       clean-pkg-json:
         specifier: ^1.3.0
         version: 1.3.0
@@ -74,18 +77,27 @@ importers:
         version: 2.26.0(typescript@5.9.3)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
       rollup-plugin-dts:
         specifier: github:privatenumber/rollup-plugin-dts#npm/master
-        version: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/10f5be68cc720070b6cf4e22cdd422d88fb22f67(rollup@4.57.1)(typescript@5.9.3)
+        version: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/9fae29f79cbbe25d792516f578478a82fa7b5351(rollup@4.57.1)(typescript@5.9.3)
       type-fest:
         specifier: ^5.4.1
         version: 5.4.4
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      typescript4:
+        specifier: npm:typescript@^4.5
+        version: typescript@4.9.5
+      typescript5:
+        specifier: npm:typescript@^5.0
+        version: typescript@5.9.3
+      typescript6:
+        specifier: npm:typescript@beta
+        version: typescript@6.0.0-beta
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2)
       vite-plugin-dts:
-        specifier: ^4.5.4
+        specifier: 4.5.4
         version: 4.5.4(@types/node@25.2.3)(rollup@4.57.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.2.3)(tsx@4.21.0)(yaml@2.8.2))
 
 packages:
@@ -1129,6 +1141,9 @@ packages:
   ajv@8.13.0:
     resolution: {integrity: sha512-PRA911Blj99jR5RMeTunVbNXMF6Lp4vZXnk5GQjcnUWUTsrXtekg/pnmFFI2u/I36Y/2bITGS30GZCXei6uNkA==}
 
+  alias-imports@1.1.1:
+    resolution: {integrity: sha512-6HNUteqnRkd1nBadjp9HfPLgIBkC73NORNEK3v/APhDXl/eCC09y8FLlCBYX6KOPILFwUVelKYgFRixEYjhwhA==}
+
   alien-signals@0.4.14:
     resolution: {integrity: sha512-itUAVzhczTmP2U5yX67xVpsbbOiquusbWVyA9N+sy6+r6YVbFkahXvNCeEPWEOMhwDYwbVbGHFkVL03N9I5g+Q==}
 
@@ -1815,6 +1830,9 @@ packages:
 
   get-conditions@1.0.0:
     resolution: {integrity: sha512-9wKpu0AjWat7OKzvChkghCCkLmYwc3lUbRP5xDSNI4+SrK4599OXcmJamgpU3pNBUOuaKjSg1NE/6ukFSC8kSA==}
+
+  get-conditions@1.0.1:
+    resolution: {integrity: sha512-Q7E89EOIkL0lr8xkm/vwmJhTejpX6dO7lRcq/x5WP/W1IY2MDuP7hxUDigLehRm8g8UMm3MX77q5h+rYNvZARw==}
 
   get-east-asian-width@1.4.0:
     resolution: {integrity: sha512-QZjmEOC+IT1uk6Rx0sX22V6uHWVwbdbxf1faPqJ1QhLdGgsRGCZoyaQBm/piRdJy/D2um6hM1UP7ZEeQ4EkP+Q==}
@@ -2647,8 +2665,8 @@ packages:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
 
-  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/10f5be68cc720070b6cf4e22cdd422d88fb22f67:
-    resolution: {tarball: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/10f5be68cc720070b6cf4e22cdd422d88fb22f67}
+  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/9fae29f79cbbe25d792516f578478a82fa7b5351:
+    resolution: {tarball: https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/9fae29f79cbbe25d792516f578478a82fa7b5351}
     version: 6.3.0
     engines: {node: '>=16'}
     peerDependencies:
@@ -2926,6 +2944,11 @@ packages:
     resolution: {integrity: sha512-3KS2b+kL7fsuk/eJZ7EQdnEmQoaho/r6KUef7hxvltNA5DR8NAUM+8wJMbJyZ4G9/7i3v5zPBIMN5aybAh2/Jg==}
     engines: {node: '>= 0.4'}
 
+  typescript@4.9.5:
+    resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
+
   typescript@5.8.2:
     resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
     engines: {node: '>=14.17'}
@@ -2933,6 +2956,11 @@ packages:
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  typescript@6.0.0-beta:
+    resolution: {integrity: sha512-CldZdztDpQRLM1HC6WDQjQkQN5Ub5zRau737a1diGh3lPmb9oRsaWHk1y5iqK0o7+1bNJ0oXfEGRkAogFZBL+Q==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -4053,6 +4081,10 @@ snapshots:
       require-from-string: 2.0.2
       uri-js: 4.4.1
 
+  alias-imports@1.1.1:
+    dependencies:
+      get-conditions: 1.0.1
+
   alien-signals@0.4.14: {}
 
   ansi-regex@6.2.2: {}
@@ -4941,6 +4973,8 @@ snapshots:
     dependencies:
       shell-quote: 1.8.3
       type-flag: 3.0.0
+
+  get-conditions@1.0.1: {}
 
   get-east-asian-width@1.4.0: {}
 
@@ -6011,7 +6045,7 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/10f5be68cc720070b6cf4e22cdd422d88fb22f67(rollup@4.57.1)(typescript@5.9.3):
+  rollup-plugin-dts@https://codeload.github.com/privatenumber/rollup-plugin-dts/tar.gz/9fae29f79cbbe25d792516f578478a82fa7b5351(rollup@4.57.1)(typescript@5.9.3):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -6359,9 +6393,13 @@ snapshots:
       possible-typed-array-names: 1.1.0
       reflect.getprototypeof: 1.0.10
 
+  typescript@4.9.5: {}
+
   typescript@5.8.2: {}
 
   typescript@5.9.3: {}
+
+  typescript@6.0.0-beta: {}
 
   ufo@1.6.3: {}
 

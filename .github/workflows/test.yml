@@ -36,5 +36,14 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: pnpm type-check
 
-      - name: Test
-        run: pnpm test
+      - name: Build
+        run: pnpm build
+
+      - name: Test TypeScript 4
+        run: node --import alias-imports --conditions typescript4 tests/index.ts
+
+      - name: Test TypeScript 5
+        run: node --import alias-imports --conditions typescript5 tests/index.ts
+
+      - name: Test TypeScript 6
+        run: node --import alias-imports --conditions typescript6 tests/index.ts
