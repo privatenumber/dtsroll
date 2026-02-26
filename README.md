@@ -157,11 +157,11 @@ This is especially useful for:
 
 ### Vite plugin
 
-If you use `vite-plugin-dts`, _dtsroll_ will automatically bundle the emitted types immediately after generation:
+If you use [`unplugin-dts`](https://github.com/qmhc/unplugin-dts), _dtsroll_ will automatically bundle the emitted types immediately after generation:
 
 ```ts
 import { defineConfig } from 'vitest/config'
-import dts from 'vite-plugin-dts'
+import dts from 'unplugin-dts/vite'
 import { dtsroll } from 'dtsroll/vite'
 
 export default defineConfig({
