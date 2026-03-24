@@ -147,6 +147,27 @@ export const dtsroll = async ({
 		}
 	});
 
+	// Warn if chunks were generated but package.json doesn't export them.
+	// Without a wildcard export, TypeScript considers references to chunk files
+	// "not portable" and emits TS2742/TS2883 in downstream packages.
+	if (outputChunks.length > 0 && pkgJson) {
+		const pkgJsonRaw = JSON.parse(
+			await (await import('node:fs/promises')).readFile(path.resolve(cwd, 'package.json'), 'utf8'),
+		);
+		const exportsMap = pkgJsonRaw.exports;
+		const hasChunkExport = exportsMap && (
+			'./_dtsroll-chunks/*' in exportsMap
+			|| './_dtsroll-chunks/*.d.ts' in exportsMap
+		);
+		if (!hasChunkExport) {
+			console.warn(
+				`${warningPrefix} ${outputChunks.length} shared chunk(s) were generated in _dtsroll-chunks/.`
+				+ ` To avoid TS2742/TS2883 ("not portable") errors in downstream packages,`
+				+ ` add to package.json exports: "./_dtsroll-chunks/*": "./_dtsroll-chunks/*"`,
+			);
+		}
+	}
+
 	return {
 		inputs: validatedInputs,
 		outputDirectory,
