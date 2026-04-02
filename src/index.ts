@@ -159,6 +159,7 @@ export const dtsroll = async ({
 			output: outputSize,
 		},
 		externals: externalPackages,
+		warnings: [],
 	};
 };
 

@@ -51,4 +51,5 @@ export type DtsrollOutput = {
 		output: number;
 	};
 	externals: Externals;
+	warnings: string[];
 };

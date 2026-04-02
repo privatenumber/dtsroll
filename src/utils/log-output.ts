@@ -42,6 +42,7 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 		},
 		size,
 		externals,
+		warnings,
 	} = dtsOutput;
 
 	const logPath = `${getDisplayPath(outputDirectory)}/`;
@@ -134,5 +135,9 @@ export const logOutput = (dtsOutput: DtsrollOutput) => {
 				.sort()
 				.join('\n'),
 		);
+	}
+
+	for (const warning of warnings) {
+		console.warn(`\n${warningPrefix} ${warning}`);
 	}
 };

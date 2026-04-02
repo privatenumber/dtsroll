@@ -33,15 +33,10 @@ describe('node', () => {
 			inputs: [fixture.getPath('./dist/index.d.ts'), fixture.getPath('./dist/some-dir/index.d.ts')],
 		});
 
-		/**
-		 * Output is slightly bigger because the input is so small
-		 * and the built snytax is more verbose
-		 * e.g. type a = 1; export { a as b }  vs export type b = 1;
-		 */
 		expect(generated).toMatchObject({
 			size: {
 				input: 288,
-				output: 320,
+				output: 187,
 			},
 		});
 	});
@@ -51,8 +46,12 @@ describe('node', () => {
 		 * Without special handling, node-resolve doesn't resolve the .d.ts
 		 * extension for subpath imports, causing rollup-plugin-dts to see
 		 * them as different modules and creating duplicate type definitions.
+		 *
+		 * With per-entry builds, both entries resolve the subpath import
+		 * to the same source file. Each entry inlines its own copy of the
+		 * type (no shared chunks), but the type is identical in both.
 		 */
-		test('should not duplicate types from subpath imports', async () => {
+		test('should resolve subpath imports correctly', async () => {
 			await using fixture = await createFixture({
 				'package.json': JSON.stringify({
 					imports: {
@@ -90,16 +89,11 @@ describe('node', () => {
 				return;
 			}
 
+			// Each entry should contain the enum definition (inlined)
 			const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
 			const consumerContent = await fixture.readFile('dist/consumer.d.ts', 'utf8');
-			const combinedContent = indexContent + consumerContent;
-
-			// Should not have duplicated enum declarations
-			const enumMatches = combinedContent.match(/enum MyEnum/g);
-			expect(enumMatches?.length ?? 0).toBeLessThanOrEqual(1);
-
-			// Should share a common chunk instead of inlining duplicates
-			expect(generated.output.chunks.length).toBeGreaterThan(0);
+			expect(indexContent).toContain('enum MyEnum');
+			expect(consumerContent).toContain('enum MyEnum');
 		});
 
 		test('should resolve .mjs to .d.mts', async () => {
@@ -1323,6 +1317,110 @@ export type { ConsumerProps } from './Consumer.js';
 			// file:// URL should be preserved exactly
 			const hasFileUrl = outputMap.sources.some(s => s?.startsWith('file://'));
 			expect(hasFileUrl).toBe(true);
+		});
+	});
+
+	describe('portability', () => {
+		/**
+		 * Per-entry builds inline shared types into each entry,
+		 * avoiding chunks that cause TS2742 in downstream packages.
+		 * This test verifies that no _dtsroll-chunks/ are generated
+		 * and that downstream tsc --declaration succeeds.
+		 */
+		test('no TS2742 in downstream packages when re-exporting types', async () => {
+			await using fixture = await createFixture({
+				'package-a': {
+					'package.json': JSON.stringify({
+						name: 'package-a',
+						type: 'module',
+						exports: {
+							'./a': {
+								types: './dist/a.d.ts',
+								default: './dist/a.js',
+							},
+							'./b': {
+								types: './dist/b.d.ts',
+								default: './dist/b.js',
+							},
+						},
+					}),
+					dist: {
+						'a.d.ts': outdent`
+						import { SharedType } from './shared';
+						export declare const a: SharedType;
+						`,
+						'b.d.ts': outdent`
+						import { SharedType } from './shared';
+						export declare const b: SharedType;
+						`,
+						'shared.d.ts': outdent`
+						export type SharedType = { name: string; id: number; };
+						`,
+						'a.js': 'export const a = { name: "test", id: 1 };',
+						'b.js': 'export const b = { name: "test", id: 2 };',
+					},
+				},
+				'package-b': {
+					'package.json': JSON.stringify({
+						name: 'package-b',
+						type: 'module',
+					}),
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2022',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+							strict: true,
+							skipLibCheck: true,
+						},
+						include: ['src'],
+					}),
+					src: {
+						'index.ts': outdent`
+						import { a } from 'package-a/a';
+						export const myValue = a;
+						`,
+					},
+				},
+			});
+
+			// Bundle package-a with dtsroll
+			const generated = await dtsroll({
+				cwd: fixture.getPath('package-a'),
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			// No chunks — shared types are inlined into each entry
+			expect(generated.output.chunks.length).toBe(0);
+
+			// Shared type should be inlined in both entries
+			const aContent = await fixture.readFile('package-a/dist/a.d.ts', 'utf8');
+			const bContent = await fixture.readFile('package-a/dist/b.d.ts', 'utf8');
+			expect(aContent).toContain('SharedType');
+			expect(bContent).toContain('SharedType');
+
+			// No _dtsroll-chunks directory should exist
+			const chunksExist = await fs.access(fixture.getPath('package-a/dist/_dtsroll-chunks')).then(() => true, () => false);
+			expect(chunksExist).toBe(false);
+
+			// Symlink package-a into package-b/node_modules
+			const nodeModulesDirectory = fixture.getPath('package-b/node_modules');
+			await fs.mkdir(nodeModulesDirectory, { recursive: true });
+			await fs.symlink(
+				fixture.getPath('package-a'),
+				fixture.getPath('package-b/node_modules/package-a'),
+			);
+
+			// tsc --declaration on package-b should succeed without
+			// TS2742 because there are no non-portable chunk references
+			await tsc(fixture.getPath('package-b'));
 		});
 	});
 

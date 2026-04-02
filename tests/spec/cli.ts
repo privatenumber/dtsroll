@@ -107,11 +107,12 @@ describe('cli', () => {
 			onTestFail(() => console.log(spawned));
 			expect('exitCode' in spawned).toBe(false);
 
+			// Per-entry builds inline shared types — no chunk imports
 			const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-			expect(indexContent).toMatch(/import \{ F as Foo \} from '.\/_dtsroll-chunks\/.+-dts.js'/);
+			expect(indexContent).toContain('type Foo = string');
 
 			const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-			expect(indexNestedContent).toMatch(/import \{ F as Foo \} from '..\/_dtsroll-chunks\/.+-dts.js'/);
+			expect(indexNestedContent).toContain('type Foo = string');
 
 			const mtsContent = await fixture.readFile('dist/dir/mts.d.mts', 'utf8');
 			expect(mtsContent).toContain('type Baz = boolean');
@@ -211,22 +212,15 @@ describe('cli', () => {
 				onTestFail(() => console.log(spawned));
 				expect('exitCode' in spawned).toBe(false);
 
+				// Per-entry builds inline shared types — no chunk imports
 				const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
-
-				const chunkNamePattern = /import \{ F as Foo \} from '.\/(_dtsroll-chunks\/.+-dts.js)'/;
-				const chunkNameMatch = indexContent.match(chunkNamePattern);
-				expect(chunkNameMatch).toBeTruthy();
-
-				const chunkImportPath = chunkNameMatch![1];
+				expect(indexContent).toContain('type Foo = string');
 
 				const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
-				expect(indexNestedContent).toContain(`import { F as Foo } from '../${chunkImportPath}'`);
+				expect(indexNestedContent).toContain('type Foo = string');
 
 				const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 				expect(bundledModuleExists).toBe(false);
-
-				const chunkExists = await fixture.exists(`dist/${chunkImportPath!.replace('.js', '.d.ts')}`);
-				expect(chunkExists).toBe(true);
 
 				const starAContent = await fixture.readFile('dist/star/a.d.ts', 'utf8');
 				expect(starAContent).toContain('declare const a: string');
@@ -491,7 +485,7 @@ describe('cli', () => {
 		expect(entry).toContain('Bar = string');
 	});
 
-	test('Chunk names dont collide', async () => {
+	test('Multiple entries with same-named dependencies produce self-contained output', async () => {
 		await using fixture = await createFixture({
 			...fixtures.multipleEntryPointsSameChunkName,
 			'package.json': JSON.stringify({
@@ -508,10 +502,13 @@ describe('cli', () => {
 		onTestFail(() => console.log(spawned));
 		expect('exitCode' in spawned).toBe(false);
 
-		const chunks = await fs.readdir(fixture.getPath('dist/_dtsroll-chunks'));
-		expect(chunks.length).toBe(2);
+		// Each entry should be self-contained (types inlined, no chunk imports)
+		const aaContent = await fixture.readFile('dist/aa.d.ts', 'utf8');
+		expect(aaContent).toContain('type Foo = string');
+		expect(aaContent).not.toContain('_dtsroll-chunks');
 
-		// Previously, it would create .d2.ts, .d3.ts, .d4.ts, when they would collide
-		expect(chunks.every(file => file.endsWith('.d.ts'))).toBeTruthy();
+		const baContent = await fixture.readFile('dist/ba.d.ts', 'utf8');
+		expect(baContent).toContain('type Foo = string');
+		expect(baContent).not.toContain('_dtsroll-chunks');
 	});
 });
