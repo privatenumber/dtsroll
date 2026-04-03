@@ -89,11 +89,13 @@ describe('node', () => {
 				return;
 			}
 
-			// Each entry should contain the enum definition (inlined)
+			// Each entry should contain the full enum definition (inlined)
 			const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
 			const consumerContent = await fixture.readFile('dist/consumer.d.ts', 'utf8');
 			expect(indexContent).toContain('enum MyEnum');
+			expect(indexContent).toContain('A = "A"');
 			expect(consumerContent).toContain('enum MyEnum');
+			expect(consumerContent).toContain('A = "A"');
 		});
 
 		test('should resolve .mjs to .d.mts', async () => {

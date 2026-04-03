@@ -110,9 +110,11 @@ describe('cli', () => {
 			// Per-entry builds inline shared types — no chunk imports
 			const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
 			expect(indexContent).toContain('type Foo = string');
+			expect(indexContent).not.toContain('_dtsroll-chunks');
 
 			const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
 			expect(indexNestedContent).toContain('type Foo = string');
+			expect(indexNestedContent).not.toContain('_dtsroll-chunks');
 
 			const mtsContent = await fixture.readFile('dist/dir/mts.d.mts', 'utf8');
 			expect(mtsContent).toContain('type Baz = boolean');
@@ -215,12 +217,18 @@ describe('cli', () => {
 				// Per-entry builds inline shared types — no chunk imports
 				const indexContent = await fixture.readFile('dist/index.d.ts', 'utf8');
 				expect(indexContent).toContain('type Foo = string');
+				expect(indexContent).not.toContain('_dtsroll-chunks');
 
 				const indexNestedContent = await fixture.readFile('dist/some-dir/index.d.ts', 'utf8');
 				expect(indexNestedContent).toContain('type Foo = string');
+				expect(indexNestedContent).not.toContain('_dtsroll-chunks');
 
 				const bundledModuleExists = await fixture.exists('dir/dts.d.ts');
 				expect(bundledModuleExists).toBe(false);
+
+				// No chunks directory should exist
+				const chunksExist = await fixture.exists('dist/_dtsroll-chunks');
+				expect(chunksExist).toBe(false);
 
 				const starAContent = await fixture.readFile('dist/star/a.d.ts', 'utf8');
 				expect(starAContent).toContain('declare const a: string');
@@ -503,12 +511,10 @@ describe('cli', () => {
 		expect('exitCode' in spawned).toBe(false);
 
 		// Each entry should be self-contained (types inlined, no chunk imports)
-		const aaContent = await fixture.readFile('dist/aa.d.ts', 'utf8');
-		expect(aaContent).toContain('type Foo = string');
-		expect(aaContent).not.toContain('_dtsroll-chunks');
-
-		const baContent = await fixture.readFile('dist/ba.d.ts', 'utf8');
-		expect(baContent).toContain('type Foo = string');
-		expect(baContent).not.toContain('_dtsroll-chunks');
+		for (const entry of ['aa.d.ts', 'ab.d.ts', 'ba.d.ts', 'bb.d.ts']) {
+			const content = await fixture.readFile(`dist/${entry}`, 'utf8');
+			expect(content).toContain('type Foo = string');
+			expect(content).not.toContain('_dtsroll-chunks');
+		}
 	});
 });
