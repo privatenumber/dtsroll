@@ -1528,7 +1528,7 @@ export type { ConsumerProps } from './Consumer.js';
 						'z.js': 'export function validate() { return true; }',
 					},
 				},
-				'consumer': {
+				consumer: {
 					'package.json': JSON.stringify({
 						name: 'consumer',
 						type: 'module',
@@ -1681,7 +1681,7 @@ export type { ConsumerProps } from './Consumer.js';
 						'types.js': 'export {};',
 					},
 				},
-				'consumer': {
+				consumer: {
 					'package.json': JSON.stringify({
 						name: 'consumer',
 						type: 'module',
