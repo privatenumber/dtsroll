@@ -91,7 +91,7 @@
 		"typescript": "^5.9.3",
 		"typescript4": "npm:typescript@^4.5",
 		"typescript5": "npm:typescript@^5.0",
-		"typescript6": "npm:typescript@beta",
+		"typescript6": "npm:typescript@^6.0",
 		"unplugin-dts": "1.0.0-beta.6",
 		"vite": "^7.3.1"
 	}

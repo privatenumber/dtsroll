@@ -91,8 +91,8 @@ importers:
         specifier: npm:typescript@^5.0
         version: typescript@5.9.3
       typescript6:
-        specifier: npm:typescript@beta
-        version: typescript@6.0.0-beta
+        specifier: npm:typescript@^6.0
+        version: typescript@6.0.2
       unplugin-dts:
         specifier: 1.0.0-beta.6
         version: 1.0.0-beta.6(esbuild@0.27.3)(rollup@4.60.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.5.2)(tsx@4.21.0)(yaml@2.8.3))
@@ -2825,8 +2825,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typescript@6.0.0-beta:
-    resolution: {integrity: sha512-CldZdztDpQRLM1HC6WDQjQkQN5Ub5zRau737a1diGh3lPmb9oRsaWHk1y5iqK0o7+1bNJ0oXfEGRkAogFZBL+Q==}
+  typescript@6.0.2:
+    resolution: {integrity: sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -6128,7 +6128,7 @@ snapshots:
 
   typescript@5.9.3: {}
 
-  typescript@6.0.0-beta: {}
+  typescript@6.0.2: {}
 
   ufo@1.6.3: {}
 
