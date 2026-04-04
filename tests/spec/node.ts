@@ -1326,6 +1326,108 @@ export type { ConsumerProps } from './Consumer.js';
 		});
 	});
 
+	describe('portability', () => {
+		/**
+		 * When multiple entries share a type and one entry re-exports it,
+		 * rollup-plugin-dts rewrites the other entry's import to go through
+		 * the public re-exporting entry instead of the private shared chunk.
+		 * This makes the type "nameable" for downstream declaration emit.
+		 *
+		 * See TS2742.md for full context on why this is necessary.
+		 */
+		test('no TS2742 in downstream packages when re-exporting shared types', async () => {
+			await using fixture = await createFixture({
+				'package-a': {
+					'package.json': JSON.stringify({
+						name: 'package-a',
+						type: 'module',
+						exports: {
+							'./a': {
+								types: './dist/a.d.ts',
+								default: './dist/a.js',
+							},
+							'./b': {
+								types: './dist/b.d.ts',
+								default: './dist/b.js',
+							},
+						},
+					}),
+					dist: {
+						'a.d.ts': outdent`
+						import { SharedType } from './shared';
+						export declare const a: SharedType;
+						`,
+						'b.d.ts': outdent`
+						import { SharedType } from './shared';
+						export declare function accept(s: SharedType): void;
+						export type { SharedType };
+						`,
+						'shared.d.ts': outdent`
+						export declare class SharedType {
+							private _id: string;
+							get id(): string;
+						}
+						`,
+						'a.js': 'export const a = {};',
+						'b.js': 'export function accept() {}',
+					},
+				},
+				'package-b': {
+					'package.json': JSON.stringify({
+						name: 'package-b',
+						type: 'module',
+					}),
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2022',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+							strict: true,
+							skipLibCheck: true,
+						},
+						include: ['src'],
+					}),
+					src: {
+						'index.ts': outdent`
+						import { a } from 'package-a/a';
+						export const myValue = a;
+						`,
+					},
+				},
+			});
+
+			// Bundle package-a with dtsroll
+			const generated = await dtsroll({
+				cwd: fixture.getPath('package-a'),
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			// entry a should import SharedType through entry b (the public host)
+			// instead of through the private shared chunk
+			const aContent = await fixture.readFile('package-a/dist/a.d.ts', 'utf8');
+			expect(aContent).toContain("from './b.js'");
+			expect(aContent).not.toContain('_dtsroll-chunks');
+
+			// Symlink package-a into package-b/node_modules
+			const nodeModulesDirectory = fixture.getPath('package-b/node_modules');
+			await fs.mkdir(nodeModulesDirectory, { recursive: true });
+			await fs.symlink(
+				fixture.getPath('package-a'),
+				fixture.getPath('package-b/node_modules/package-a'),
+			);
+
+			// tsc --declaration on package-b should succeed without TS2742
+			await tsc(fixture.getPath('package-b'));
+		});
+	});
+
 	test('declare global should not be treated as an exported binding', async () => {
 		await using fixture = await createFixture({
 			dist: {

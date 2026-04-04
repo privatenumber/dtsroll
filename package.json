@@ -87,7 +87,7 @@
 		"nano-spawn": "^2.1.0",
 		"outdent": "^0.8.0",
 		"pkgroll": "^2.27.0",
-		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/master",
+		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/test/shared-chunk-portability",
 		"skills-npm": "^1.1.1",
 		"type-fest": "^5.5.0",
 		"typescript": "^6.0.2",
