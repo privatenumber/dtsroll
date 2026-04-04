@@ -1578,6 +1578,154 @@ export type { ConsumerProps } from './Consumer.js';
 			// Downstream tsc should succeed
 			await tsc(fixture.getPath('consumer'));
 		});
+
+		/**
+		 * Shared module exports two types but only one is re-exported
+		 * by a public entry. The re-exported type gets rewritten to go
+		 * through the host entry; the other stays in the chunk.
+		 */
+		test('mixed visibility — partial fix with some types remaining in chunk', async () => {
+			await using fixture = await createFixture({
+				'package.json': JSON.stringify({
+					name: 'test-pkg',
+					type: 'module',
+					exports: {
+						'./a': {
+							types: './dist/a.d.ts',
+							default: './dist/a.js',
+						},
+						'./b': {
+							types: './dist/b.d.ts',
+							default: './dist/b.js',
+						},
+					},
+				}),
+				dist: {
+					'a.d.ts': outdent`
+					import { PublicType, InternalType } from './shared';
+					export declare const pub: PublicType;
+					export declare const priv: InternalType;
+					`,
+					'b.d.ts': outdent`
+					import { PublicType, InternalType } from './shared';
+					export declare const other: InternalType;
+					export type { PublicType };
+					`,
+					'shared.d.ts': outdent`
+					export declare class PublicType {
+						private _pub: string;
+						get value(): string;
+					}
+					export declare class InternalType {
+						private _internal: number;
+						get count(): number;
+					}
+					`,
+				},
+			});
+
+			const generated = await dtsroll({
+				cwd: fixture.path,
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			const aContent = await fixture.readFile('dist/a.d.ts', 'utf8');
+
+			// PublicType should be rewritten to import from entry b
+			expect(aContent).toContain("from './b.js'");
+
+			// InternalType has no public re-export, stays in chunk
+			expect(aContent).toContain('_dtsroll-chunks');
+		});
+
+		/**
+		 * Host entry uses `export *` to re-export the shared module.
+		 * The plugin should recognize `export *` as a valid host route.
+		 */
+		test('export star host makes downstream portable', async () => {
+			await using fixture = await createFixture({
+				'package-a': {
+					'package.json': JSON.stringify({
+						name: 'package-a',
+						type: 'module',
+						exports: {
+							'./a': {
+								types: './dist/a.d.ts',
+								default: './dist/a.js',
+							},
+							'./types': {
+								types: './dist/types.d.ts',
+								default: './dist/types.js',
+							},
+						},
+					}),
+					dist: {
+						'a.d.ts': outdent`
+						import { Config } from './shared';
+						export declare const app: Config;
+						`,
+						'types.d.ts': outdent`
+						export * from './shared';
+						`,
+						'shared.d.ts': outdent`
+						export declare class Config {
+							private _settings: Record<string, unknown>;
+							get(key: string): unknown;
+						}
+						`,
+						'a.js': 'export const app = {};',
+						'types.js': 'export {};',
+					},
+				},
+				'consumer': {
+					'package.json': JSON.stringify({
+						name: 'consumer',
+						type: 'module',
+					}),
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2022',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+							strict: true,
+							skipLibCheck: true,
+						},
+						include: ['src'],
+					}),
+					'node_modules/package-a': ({ symlink }) => symlink('../../package-a'),
+					src: {
+						'index.ts': outdent`
+						import { app } from 'package-a/a';
+						export const myApp = app;
+						`,
+					},
+				},
+			});
+
+			const generated = await dtsroll({
+				cwd: fixture.getPath('package-a'),
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			// entry a should import Config through the types entry
+			const aContent = await fixture.readFile('package-a/dist/a.d.ts', 'utf8');
+			expect(aContent).toContain("from './types.js'");
+			expect(aContent).not.toContain('_dtsroll-chunks');
+
+			// Downstream tsc should succeed
+			await tsc(fixture.getPath('consumer'));
+		});
 	});
 
 	test('declare global should not be treated as an exported binding', async () => {
