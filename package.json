@@ -90,7 +90,7 @@
 		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/master",
 		"skills-npm": "^1.1.1",
 		"type-fest": "^5.5.0",
-		"typescript": "^5.9.3",
+		"typescript": "^6.0.2",
 		"typescript4": "npm:typescript@^4.5",
 		"typescript5": "npm:typescript@^5.0",
 		"typescript6": "npm:typescript@^6.0",
