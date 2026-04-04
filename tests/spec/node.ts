@@ -1390,6 +1390,7 @@ export type { ConsumerProps } from './Consumer.js';
 						},
 						include: ['src'],
 					}),
+					'node_modules/package-a': ({ symlink }) => symlink('../../package-a'),
 					src: {
 						'index.ts': outdent`
 						import { a } from 'package-a/a';
@@ -1414,14 +1415,6 @@ export type { ConsumerProps } from './Consumer.js';
 			const aContent = await fixture.readFile('package-a/dist/a.d.ts', 'utf8');
 			expect(aContent).toContain("from './b.js'");
 			expect(aContent).not.toContain('_dtsroll-chunks');
-
-			// Symlink package-a into package-b/node_modules
-			const nodeModulesDirectory = fixture.getPath('package-b/node_modules');
-			await fs.mkdir(nodeModulesDirectory, { recursive: true });
-			await fs.symlink(
-				fixture.getPath('package-a'),
-				fixture.getPath('package-b/node_modules/package-a'),
-			);
 
 			// tsc --declaration on package-b should succeed without TS2742
 			await tsc(fixture.getPath('package-b'));
