@@ -47,7 +47,8 @@
 		"dev": "node --watch tests/index.ts",
 		"lint": "lintroll --cache --node --ignore-pattern tests/fixture-package .",
 		"type-check": "tsc",
-		"prepack": "pnpm build && clean-pkg-json"
+		"prepack": "pnpm build && clean-pkg-json",
+		"prepare": "skills-npm --yes --agents '*'"
 	},
 	"engines": {
 		"node": ">=18"
@@ -87,6 +88,7 @@
 		"outdent": "^0.8.0",
 		"pkgroll": "^2.27.0",
 		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/master",
+		"skills-npm": "^1.1.1",
 		"type-fest": "^5.5.0",
 		"typescript": "^5.9.3",
 		"typescript4": "npm:typescript@^4.5",
