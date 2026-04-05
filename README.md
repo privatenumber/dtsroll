@@ -177,11 +177,20 @@ export default defineConfig({
 ```ts
 import { dtsroll } from 'dtsroll'
 
-await dtsroll({
+const result = await dtsroll({
     cwd: process.cwd(),
     dryRun: false,
     sourcemap: true // generates .d.ts.map files
 })
+
+if ('error' in result) {
+    console.error(result.error)
+} else {
+    // Warnings about non-portable shared chunk types (TS2742)
+    for (const warning of result.warnings) {
+        console.warn(warning)
+    }
+}
 ```
 
 ## Related

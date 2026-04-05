@@ -1416,6 +1416,9 @@ export type { ConsumerProps } from './Consumer.js';
 			expect(aContent).toContain("from './b.js'");
 			expect(aContent).not.toContain('_dtsroll-chunks');
 
+			// No warnings — all shared types were successfully rewritten
+			expect(generated.warnings).toEqual([]);
+
 			// tsc --declaration on package-b should succeed without TS2742
 			await tsc(fixture.getPath('package-b'));
 		});
@@ -1475,6 +1478,12 @@ export type { ConsumerProps } from './Consumer.js';
 			const bContent = await fixture.readFile('dist/b.d.ts', 'utf8');
 			expect(aContent).toContain('_dtsroll-chunks');
 			expect(bContent).toContain('_dtsroll-chunks');
+
+			// Plugin should warn about each entry that leaks private shared types
+			expect(generated.warnings.sort()).toEqual([
+				'[plugin dts] Entry "a.d.ts" still references private shared type exports with no public re-export: SharedType. rollup-plugin-dts will not invent new public exports for these types. Re-export them from a public entry to avoid downstream TS2742 errors.',
+				'[plugin dts] Entry "b.d.ts" still references private shared type exports with no public re-export: SharedType. rollup-plugin-dts will not invent new public exports for these types. Re-export them from a public entry to avoid downstream TS2742 errors.',
+			]);
 		});
 
 		/**
@@ -1575,6 +1584,9 @@ export type { ConsumerProps } from './Consumer.js';
 			expect(yContent).toContain("from './z.js'");
 			expect(yContent).not.toContain('_dtsroll-chunks');
 
+			// No warnings — all shared types were successfully rewritten
+			expect(generated.warnings).toEqual([]);
+
 			// Downstream tsc should succeed
 			await tsc(fixture.getPath('consumer'));
 		});
@@ -1640,6 +1652,12 @@ export type { ConsumerProps } from './Consumer.js';
 
 			// InternalType has no public re-export, stays in chunk
 			expect(aContent).toContain('_dtsroll-chunks');
+
+			// Warning emitted for InternalType which has no public host — both entries use it
+			expect(generated.warnings.sort()).toEqual([
+				'[plugin dts] Entry "a.d.ts" still references private shared type exports with no public re-export: InternalType. rollup-plugin-dts will not invent new public exports for these types. Re-export them from a public entry to avoid downstream TS2742 errors.',
+				'[plugin dts] Entry "b.d.ts" still references private shared type exports with no public re-export: InternalType. rollup-plugin-dts will not invent new public exports for these types. Re-export them from a public entry to avoid downstream TS2742 errors.',
+			]);
 		});
 
 		/**
@@ -1722,6 +1740,9 @@ export type { ConsumerProps } from './Consumer.js';
 			const aContent = await fixture.readFile('package-a/dist/a.d.ts', 'utf8');
 			expect(aContent).toContain("from './types.js'");
 			expect(aContent).not.toContain('_dtsroll-chunks');
+
+			// No warnings — all shared types were successfully rewritten
+			expect(generated.warnings).toEqual([]);
 
 			// Downstream tsc should succeed
 			await tsc(fixture.getPath('consumer'));
