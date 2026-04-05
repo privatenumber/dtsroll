@@ -51,4 +51,7 @@ export type DtsrollOutput = {
 		output: number;
 	};
 	externals: Externals;
+
+	/** Warnings emitted during the build (e.g. non-portable shared chunk types). */
+	warnings: string[];
 };

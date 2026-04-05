@@ -1326,6 +1326,429 @@ export type { ConsumerProps } from './Consumer.js';
 		});
 	});
 
+	describe('portability', () => {
+		/**
+		 * When multiple entries share a type and one entry re-exports it,
+		 * rollup-plugin-dts rewrites the other entry's import to go through
+		 * the public re-exporting entry instead of the private shared chunk.
+		 * This makes the type "nameable" for downstream declaration emit.
+		 *
+		 * See TS2742.md for full context on why this is necessary.
+		 */
+		test('no TS2742 in downstream packages when re-exporting shared types', async () => {
+			await using fixture = await createFixture({
+				'package-a': {
+					'package.json': JSON.stringify({
+						name: 'package-a',
+						type: 'module',
+						exports: {
+							'./a': {
+								types: './dist/a.d.ts',
+								default: './dist/a.js',
+							},
+							'./b': {
+								types: './dist/b.d.ts',
+								default: './dist/b.js',
+							},
+						},
+					}),
+					dist: {
+						'a.d.ts': outdent`
+						import { SharedType } from './shared';
+						export declare const a: SharedType;
+						`,
+						'b.d.ts': outdent`
+						import { SharedType } from './shared';
+						export declare function accept(s: SharedType): void;
+						export type { SharedType };
+						`,
+						'shared.d.ts': outdent`
+						export declare class SharedType {
+							private _id: string;
+							get id(): string;
+						}
+						`,
+						'a.js': 'export const a = {};',
+						'b.js': 'export function accept() {}',
+					},
+				},
+				'package-b': {
+					'package.json': JSON.stringify({
+						name: 'package-b',
+						type: 'module',
+					}),
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2022',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+							strict: true,
+							skipLibCheck: true,
+						},
+						include: ['src'],
+					}),
+					'node_modules/package-a': ({ symlink }) => symlink('../../package-a'),
+					src: {
+						'index.ts': outdent`
+						import { a } from 'package-a/a';
+						export const myValue = a;
+						`,
+					},
+				},
+			});
+
+			// Bundle package-a with dtsroll
+			const generated = await dtsroll({
+				cwd: fixture.getPath('package-a'),
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			// entry a should import SharedType through entry b (the public host)
+			// instead of through the private shared chunk
+			const aContent = await fixture.readFile('package-a/dist/a.d.ts', 'utf8');
+			expect(aContent).toContain("from './b.js'");
+			expect(aContent).not.toContain('_dtsroll-chunks');
+
+			// No warnings — all shared types were successfully rewritten
+			expect(generated.warnings).toEqual([]);
+
+			// tsc --declaration on package-b should succeed without TS2742
+			await tsc(fixture.getPath('package-b'));
+		});
+
+		/**
+		 * When no entry re-exports the shared type, rollup-plugin-dts
+		 * can't rewrite the import to a portable path. It emits a warning
+		 * and leaves the chunk import as-is. Downstream tsc will still
+		 * fail with TS2742 — the package author needs to add a public
+		 * re-export.
+		 */
+		test('warns when no entry re-exports shared type', async () => {
+			await using fixture = await createFixture({
+				'package.json': JSON.stringify({
+					name: 'test-pkg',
+					type: 'module',
+					exports: {
+						'./a': {
+							types: './dist/a.d.ts',
+							default: './dist/a.js',
+						},
+						'./b': {
+							types: './dist/b.d.ts',
+							default: './dist/b.js',
+						},
+					},
+				}),
+				dist: {
+					'a.d.ts': outdent`
+					import { SharedType } from './shared';
+					export declare const a: SharedType;
+					`,
+					'b.d.ts': outdent`
+					import { SharedType } from './shared';
+					export declare const b: SharedType;
+					`,
+					'shared.d.ts': outdent`
+					export declare class SharedType {
+						private _id: string;
+						get id(): string;
+					}
+					`,
+				},
+			});
+
+			const generated = await dtsroll({
+				cwd: fixture.path,
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			// Both entries still import from the chunk (can't be fixed)
+			const aContent = await fixture.readFile('dist/a.d.ts', 'utf8');
+			const bContent = await fixture.readFile('dist/b.d.ts', 'utf8');
+			expect(aContent).toContain('_dtsroll-chunks');
+			expect(bContent).toContain('_dtsroll-chunks');
+
+			// Plugin should warn about each entry that leaks private shared types
+			expect(generated.warnings.sort()).toEqual([
+				'[plugin dts] Entry "a.d.ts" still references private shared type exports with no public re-export: SharedType. rollup-plugin-dts will not invent new public exports for these types. Re-export them from a public entry to avoid downstream TS2742 errors.',
+				'[plugin dts] Entry "b.d.ts" still references private shared type exports with no public re-export: SharedType. rollup-plugin-dts will not invent new public exports for these types. Re-export them from a public entry to avoid downstream TS2742 errors.',
+			]);
+		});
+
+		/**
+		 * With three entries where only one re-exports the shared type,
+		 * both other entries should have their imports rewritten to go
+		 * through the host entry.
+		 */
+		test('multiple entries rewritten to single host', async () => {
+			await using fixture = await createFixture({
+				'package-a': {
+					'package.json': JSON.stringify({
+						name: 'package-a',
+						type: 'module',
+						exports: {
+							'./x': {
+								types: './dist/x.d.ts',
+								default: './dist/x.js',
+							},
+							'./y': {
+								types: './dist/y.d.ts',
+								default: './dist/y.js',
+							},
+							'./z': {
+								types: './dist/z.d.ts',
+								default: './dist/z.js',
+							},
+						},
+					}),
+					dist: {
+						'x.d.ts': outdent`
+						import { Config } from './shared';
+						export declare const x: Config;
+						`,
+						'y.d.ts': outdent`
+						import { Config } from './shared';
+						export declare const y: Config;
+						`,
+						'z.d.ts': outdent`
+						import { Config } from './shared';
+						export declare function validate(c: Config): boolean;
+						export type { Config };
+						`,
+						'shared.d.ts': outdent`
+						export declare class Config {
+							private _data: Map<string, unknown>;
+							get(key: string): unknown;
+						}
+						`,
+						'x.js': 'export const x = {};',
+						'y.js': 'export const y = {};',
+						'z.js': 'export function validate() { return true; }',
+					},
+				},
+				consumer: {
+					'package.json': JSON.stringify({
+						name: 'consumer',
+						type: 'module',
+					}),
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2022',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+							strict: true,
+							skipLibCheck: true,
+						},
+						include: ['src'],
+					}),
+					'node_modules/package-a': ({ symlink }) => symlink('../../package-a'),
+					src: {
+						'index.ts': outdent`
+						import { x } from 'package-a/x';
+						import { y } from 'package-a/y';
+						export const config1 = x;
+						export const config2 = y;
+						`,
+					},
+				},
+			});
+
+			const generated = await dtsroll({
+				cwd: fixture.getPath('package-a'),
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			// x and y should import Config through z (the only public host)
+			const xContent = await fixture.readFile('package-a/dist/x.d.ts', 'utf8');
+			const yContent = await fixture.readFile('package-a/dist/y.d.ts', 'utf8');
+			expect(xContent).toContain("from './z.js'");
+			expect(xContent).not.toContain('_dtsroll-chunks');
+			expect(yContent).toContain("from './z.js'");
+			expect(yContent).not.toContain('_dtsroll-chunks');
+
+			// No warnings — all shared types were successfully rewritten
+			expect(generated.warnings).toEqual([]);
+
+			// Downstream tsc should succeed
+			await tsc(fixture.getPath('consumer'));
+		});
+
+		/**
+		 * Shared module exports two types but only one is re-exported
+		 * by a public entry. The re-exported type gets rewritten to go
+		 * through the host entry; the other stays in the chunk.
+		 */
+		test('mixed visibility — partial fix with some types remaining in chunk', async () => {
+			await using fixture = await createFixture({
+				'package.json': JSON.stringify({
+					name: 'test-pkg',
+					type: 'module',
+					exports: {
+						'./a': {
+							types: './dist/a.d.ts',
+							default: './dist/a.js',
+						},
+						'./b': {
+							types: './dist/b.d.ts',
+							default: './dist/b.js',
+						},
+					},
+				}),
+				dist: {
+					'a.d.ts': outdent`
+					import { PublicType, InternalType } from './shared';
+					export declare const pub: PublicType;
+					export declare const priv: InternalType;
+					`,
+					'b.d.ts': outdent`
+					import { PublicType, InternalType } from './shared';
+					export declare const other: InternalType;
+					export type { PublicType };
+					`,
+					'shared.d.ts': outdent`
+					export declare class PublicType {
+						private _pub: string;
+						get value(): string;
+					}
+					export declare class InternalType {
+						private _internal: number;
+						get count(): number;
+					}
+					`,
+				},
+			});
+
+			const generated = await dtsroll({
+				cwd: fixture.path,
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			const aContent = await fixture.readFile('dist/a.d.ts', 'utf8');
+
+			// PublicType should be rewritten to import from entry b
+			expect(aContent).toContain("from './b.js'");
+
+			// InternalType has no public re-export, stays in chunk
+			expect(aContent).toContain('_dtsroll-chunks');
+
+			// Warning emitted for InternalType which has no public host — both entries use it
+			expect(generated.warnings.sort()).toEqual([
+				'[plugin dts] Entry "a.d.ts" still references private shared type exports with no public re-export: InternalType. rollup-plugin-dts will not invent new public exports for these types. Re-export them from a public entry to avoid downstream TS2742 errors.',
+				'[plugin dts] Entry "b.d.ts" still references private shared type exports with no public re-export: InternalType. rollup-plugin-dts will not invent new public exports for these types. Re-export them from a public entry to avoid downstream TS2742 errors.',
+			]);
+		});
+
+		/**
+		 * Host entry uses `export *` to re-export the shared module.
+		 * The plugin should recognize `export *` as a valid host route.
+		 */
+		test('export star host makes downstream portable', async () => {
+			await using fixture = await createFixture({
+				'package-a': {
+					'package.json': JSON.stringify({
+						name: 'package-a',
+						type: 'module',
+						exports: {
+							'./a': {
+								types: './dist/a.d.ts',
+								default: './dist/a.js',
+							},
+							'./types': {
+								types: './dist/types.d.ts',
+								default: './dist/types.js',
+							},
+						},
+					}),
+					dist: {
+						'a.d.ts': outdent`
+						import { Config } from './shared';
+						export declare const app: Config;
+						`,
+						'types.d.ts': outdent`
+						export * from './shared';
+						`,
+						'shared.d.ts': outdent`
+						export declare class Config {
+							private _settings: Record<string, unknown>;
+							get(key: string): unknown;
+						}
+						`,
+						'a.js': 'export const app = {};',
+						'types.js': 'export {};',
+					},
+				},
+				consumer: {
+					'package.json': JSON.stringify({
+						name: 'consumer',
+						type: 'module',
+					}),
+					'tsconfig.json': JSON.stringify({
+						compilerOptions: {
+							declaration: true,
+							outDir: 'dist',
+							rootDir: 'src',
+							target: 'ES2022',
+							module: 'NodeNext',
+							moduleResolution: 'NodeNext',
+							strict: true,
+							skipLibCheck: true,
+						},
+						include: ['src'],
+					}),
+					'node_modules/package-a': ({ symlink }) => symlink('../../package-a'),
+					src: {
+						'index.ts': outdent`
+						import { app } from 'package-a/a';
+						export const myApp = app;
+						`,
+					},
+				},
+			});
+
+			const generated = await dtsroll({
+				cwd: fixture.getPath('package-a'),
+			});
+
+			expect('error' in generated).toBe(false);
+			if ('error' in generated) {
+				return;
+			}
+
+			// entry a should import Config through the types entry
+			const aContent = await fixture.readFile('package-a/dist/a.d.ts', 'utf8');
+			expect(aContent).toContain("from './types.js'");
+			expect(aContent).not.toContain('_dtsroll-chunks');
+
+			// No warnings — all shared types were successfully rewritten
+			expect(generated.warnings).toEqual([]);
+
+			// Downstream tsc should succeed
+			await tsc(fixture.getPath('consumer'));
+		});
+	});
+
 	test('declare global should not be treated as an exported binding', async () => {
 		await using fixture = await createFixture({
 			dist: {

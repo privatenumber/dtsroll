@@ -38,6 +38,7 @@ export const build = async (
 	} = createExternalizePlugin(externals);
 
 	const sizeRef: { value?: number } = {};
+	const warnings: string[] = [];
 	const rollupConfig = {
 		input: createInputMap(input, outputDirectory),
 
@@ -46,6 +47,10 @@ export const build = async (
 			dir: outputDirectory,
 			entryFileNames: '[name]',
 			chunkFileNames: '_dtsroll-chunks/[hash]-[name].ts',
+		},
+
+		onwarn(warning) {
+			warnings.push(String(warning.message || warning));
 		},
 
 		plugins: [
@@ -74,5 +79,6 @@ export const build = async (
 		externalized,
 		getPackageEntryPoint,
 		sourceSize: sizeRef.value ?? 0,
+		warnings,
 	};
 };

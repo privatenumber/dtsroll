@@ -87,6 +87,7 @@ export const dtsroll = async ({
 		externalized,
 		getPackageEntryPoint,
 		sourceSize,
+		warnings,
 	} = await build(
 		inputFiles,
 		outputDirectory,
@@ -159,6 +160,7 @@ export const dtsroll = async ({
 			output: outputSize,
 		},
 		externals: externalPackages,
+		warnings,
 	};
 };
 
