@@ -60,7 +60,7 @@
 		"convert-source-map": "^2.0.0",
 		"empathic": "^2.0.0",
 		"resolve-pkg-maps": "^1.0.0",
-		"rollup": "^4.60.1",
+		"rollup": "^4.60.2",
 		"rollup-plugin-import-trace": "^1.0.1"
 	},
 	"peerDependencies": {
@@ -78,11 +78,11 @@
 		"@types/convert-source-map": "^2.0.3",
 		"@types/node": "^25.5.2",
 		"alias-imports": "^1.1.1",
-		"clean-pkg-json": "^1.4.1",
+		"clean-pkg-json": "^1.4.2",
 		"execa": "9.6.1",
 		"fs-fixture": "^2.13.0",
 		"kolorist": "^1.8.0",
-		"lintroll": "^1.30.1",
+		"lintroll": "^1.30.2",
 		"manten": "^2.0.0",
 		"nano-spawn": "^2.1.0",
 		"outdent": "^0.8.0",
@@ -90,11 +90,11 @@
 		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/master",
 		"skills-npm": "^1.1.1",
 		"type-fest": "^5.5.0",
-		"typescript": "^6.0.2",
-		"typescript4": "npm:typescript@^4.5",
+		"typescript": "^6.0.3",
+		"typescript4": "npm:typescript@^4.5.5",
 		"typescript5": "npm:typescript@^5.9.3",
-		"typescript6": "npm:typescript@^6.0",
+		"typescript6": "npm:typescript@^6.0.3",
 		"unplugin-dts": "1.0.0-beta.6",
-		"vite": "^7.3.1"
+		"vite": "^7.3.2"
 	}
 }
