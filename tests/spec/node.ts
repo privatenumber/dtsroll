@@ -46,6 +46,32 @@ describe('node', () => {
 		});
 	});
 
+	test('preserves namespace type export specifier syntax', async () => {
+		await using fixture = await createFixture({
+			dist: {
+				'index.d.ts': outdent`
+				type T = { one: 1 };
+
+				declare namespace component {
+					export { type T };
+				}
+
+				export { component };
+				`,
+			},
+		});
+
+		const generated = await dtsroll({
+			inputs: [fixture.getPath('dist/index.d.ts')],
+		});
+
+		expect('error' in generated).toBe(false);
+
+		const content = await fixture.readFile('dist/index.d.ts', 'utf8');
+		expect(content).not.toContain('export type { type T }');
+		expect(content).toMatch(/export (?:type \{ T \}|\{ type T \});/);
+	});
+
 	describe('subpath imports', () => {
 		/**
 		 * Without special handling, node-resolve doesn't resolve the .d.ts
