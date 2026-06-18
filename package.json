@@ -58,9 +58,9 @@
 		"byte-size": "^9.0.1",
 		"cleye": "^2.6.0",
 		"convert-source-map": "^2.0.0",
-		"empathic": "^2.0.0",
+		"empathic": "^2.0.1",
 		"resolve-pkg-maps": "^1.0.0",
-		"rollup": "^4.60.2",
+		"rollup": "^4.60.4",
 		"rollup-plugin-import-trace": "^1.0.1"
 	},
 	"peerDependencies": {
@@ -76,7 +76,7 @@
 		"@jridgewell/trace-mapping": "^0.3.31",
 		"@types/byte-size": "^8.1.2",
 		"@types/convert-source-map": "^2.0.3",
-		"@types/node": "^25.6.0",
+		"@types/node": "^25.6.2",
 		"alias-imports": "^1.1.1",
 		"clean-pkg-json": "^1.4.2",
 		"execa": "9.6.1",
@@ -86,7 +86,7 @@
 		"manten": "^2.0.0",
 		"nano-spawn": "^2.1.0",
 		"outdent": "^0.8.0",
-		"pkgroll": "^2.27.0",
+		"pkgroll": "^2.27.1",
 		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/master",
 		"skills-npm": "^1.2.0",
 		"type-fest": "^5.6.0",
@@ -94,7 +94,7 @@
 		"typescript4": "npm:typescript@^4.5.5",
 		"typescript5": "npm:typescript@^5.9.3",
 		"typescript6": "npm:typescript@^6.0.3",
-		"unplugin-dts": "1.0.0",
-		"vite": "^8.0.10"
+		"unplugin-dts": "1.0.2",
+		"vite": "^8.0.16"
 	}
 }
