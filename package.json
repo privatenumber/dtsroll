@@ -48,7 +48,7 @@
 		"lint": "lintroll --cache --node --ignore-pattern tests/fixture-package .",
 		"type-check": "tsc",
 		"prepack": "pnpm build && clean-pkg-json",
-		"prepare": "skills-npm --yes --agents '*'"
+		"prepare": "skills-npm"
 	},
 	"engines": {
 		"node": ">=18"
