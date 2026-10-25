@@ -25,5 +25,6 @@ dist
 # Eslint cache
 .eslintcache
 
-# skills-npm
-**/skills/npm-*
+# Agent skill links from dependencies (managed by pnpm)
+**/skills/pnpm-*
+**/skills/.gitignore
