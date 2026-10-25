@@ -15,5 +15,4 @@ permissions:
     skills: true
 skills:
   dirs:
-    - .claude/skills
     - .agents/skills
