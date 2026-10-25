@@ -24,6 +24,3 @@ dist
 
 # Eslint cache
 .eslintcache
-
-# skills-npm
-**/skills/npm-*

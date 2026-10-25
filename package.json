@@ -40,15 +40,14 @@
 			"default": "typescript"
 		}
 	},
-	"packageManager": "pnpm@10.14.0",
+	"packageManager": "pnpm@12.15.0",
 	"scripts": {
 		"build": "pkgroll",
 		"test": "pnpm build && node tests/index.ts",
 		"dev": "node --watch tests/index.ts",
 		"lint": "lintroll --cache --node --ignore-pattern tests/fixture-package .",
 		"type-check": "tsc",
-		"prepack": "pnpm build && clean-pkg-json",
-		"prepare": "skills-npm"
+		"prepack": "pnpm build && clean-pkg-json"
 	},
 	"engines": {
 		"node": ">=18"
@@ -88,7 +87,6 @@
 		"outdent": "^0.8.0",
 		"pkgroll": "^2.27.1",
 		"rollup-plugin-dts": "github:privatenumber/rollup-plugin-dts#npm/master",
-		"skills-npm": "^1.2.0",
 		"type-fest": "^5.6.0",
 		"typescript": "^6.0.3",
 		"typescript4": "npm:typescript@^4.5.5",
