@@ -2,6 +2,9 @@ allowBuilds:
   esbuild: false
   unrs-resolver: false
 
+minimumReleaseAgeExclude:
+  - alias-imports
+
 permissions:
   clean-pkg-json:
     skills: true
