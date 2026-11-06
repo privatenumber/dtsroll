@@ -1,6 +1,5 @@
 import { cli } from 'cleye';
 import { bgYellow, black } from 'kolorist';
-import { patchErrorWithTrace } from 'rollup-plugin-import-trace';
 import { name, version, description } from '../package.json';
 import { logOutput } from './utils/log-output.ts';
 import { dtsroll } from './index.ts';
@@ -59,7 +58,6 @@ dtsroll({
 ).catch(
 	(error: unknown) => {
 		console.error('\nFailed to build\n');
-		patchErrorWithTrace(error);
 		console.error(error instanceof Error ? error.message : String(error));
 		process.exitCode = 1;
 	},
