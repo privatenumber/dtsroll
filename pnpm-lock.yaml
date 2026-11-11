@@ -243,7 +243,7 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
       typescript4:
-        specifier: npm:typescript@^4.5.5
+        specifier: npm:typescript@^4.9.5
         version: typescript@4.9.5
       typescript5:
         specifier: npm:typescript@^5.9.3
